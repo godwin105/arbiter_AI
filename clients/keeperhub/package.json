@@ -1,7 +1,7 @@
 {
   "name": "@arbiter/keeperhub",
   "version": "0.1.0",
-  "description": "Judgment in front of KeeperHub — an agent that cannot execute what it has not checked.",
+  "description": "Judgment in front of KeeperHub \u2014 an agent that cannot execute what it has not checked.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -11,11 +11,16 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
-  "engines": { "node": ">=22" },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@arbiter/sdk": "^0.1.0"
@@ -23,5 +28,29 @@
   "devDependencies": {
     "@types/node": "^24.7.0",
     "typescript": "^5.9.3"
+  },
+  "license": "MIT",
+  "author": "Godwin Tairo",
+  "homepage": "https://github.com/godwin105/arbiter_AI/tree/main/clients/keeperhub#readme",
+  "bugs": {
+    "url": "https://github.com/godwin105/arbiter_AI/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/godwin105/arbiter_AI.git",
+    "directory": "clients/keeperhub"
+  },
+  "keywords": [
+    "keeperhub",
+    "onchain-agent",
+    "ai-agent",
+    "agent-security",
+    "evm",
+    "ethereum",
+    "transaction-simulation",
+    "eip-7702"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

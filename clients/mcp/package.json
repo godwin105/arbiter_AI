@@ -7,14 +7,17 @@
     "arbiter-mcp": "./dist/index.js"
   },
   "main": "./dist/index.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@arbiter/sdk": "^0.1.0",
@@ -24,5 +27,30 @@
   "devDependencies": {
     "@types/node": "^24.7.0",
     "typescript": "^5.9.3"
+  },
+  "license": "MIT",
+  "author": "Godwin Tairo",
+  "homepage": "https://github.com/godwin105/arbiter_AI/tree/main/clients/mcp#readme",
+  "bugs": {
+    "url": "https://github.com/godwin105/arbiter_AI/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/godwin105/arbiter_AI.git",
+    "directory": "clients/mcp"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
+    "ai-agent",
+    "agent-security",
+    "claude",
+    "x402",
+    "algorand",
+    "transaction-simulation"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

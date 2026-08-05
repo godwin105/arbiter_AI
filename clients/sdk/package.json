@@ -1,7 +1,7 @@
 {
   "name": "@arbiter/sdk",
   "version": "0.1.0",
-  "description": "Paying client for Arbiter — judgment for autonomous agents, settled over x402 on Algorand.",
+  "description": "Paying client for Arbiter \u2014 judgment for autonomous agents, settled over x402 on Algorand.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -11,13 +11,16 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@x402/avm": "^2.21.0",
@@ -27,5 +30,30 @@
   "devDependencies": {
     "@types/node": "^24.7.0",
     "typescript": "^5.9.3"
+  },
+  "license": "MIT",
+  "author": "Godwin Tairo",
+  "homepage": "https://github.com/godwin105/arbiter_AI/tree/main/clients/sdk#readme",
+  "bugs": {
+    "url": "https://github.com/godwin105/arbiter_AI/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/godwin105/arbiter_AI.git",
+    "directory": "clients/sdk"
+  },
+  "keywords": [
+    "x402",
+    "algorand",
+    "usdc",
+    "ai-agent",
+    "agent-security",
+    "transaction-simulation",
+    "wallet-security",
+    "micropayments",
+    "agent-safety"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

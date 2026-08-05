@@ -26,7 +26,9 @@
     "demo:keeperhub": "tsx scripts/demo-keeperhub.ts",
     "demo": "npm run demo:attacks && npm run demo:counterparty && npm run demo:human",
     "build:clients": "npm run build -w @arbiter/sdk -w @arbiter/mcp -w @arbiter/langchain -w @arbiter/eliza -w @arbiter/proxy -w @arbiter/keeperhub",
-    "typecheck:all": "npm run typecheck && npm run typecheck -w @arbiter/sdk -w @arbiter/mcp -w @arbiter/langchain -w @arbiter/eliza -w @arbiter/proxy -w @arbiter/keeperhub"
+    "typecheck:all": "npm run typecheck && npm run typecheck -w @arbiter/sdk -w @arbiter/mcp -w @arbiter/langchain -w @arbiter/eliza -w @arbiter/proxy -w @arbiter/keeperhub",
+    "publish:check": "bash scripts/publish-packages.sh --dry-run",
+    "publish:packages": "bash scripts/publish-packages.sh"
   },
   "dependencies": {
     "@x402/avm": "^2.21.0",
