@@ -29,6 +29,16 @@ and can then ask for any kind of judgment without new branching logic:
 }
 ```
 
+## Live
+
+**https://arbiter-hs23.onrender.com** — API, and the reviewer app at
+[`/work`](https://arbiter-hs23.onrender.com/work/).
+
+Preflight: 18 passed, 0 blocking failures. Running on Render's free plan, which
+has no persistent disk and spins down after 15 minutes idle — see
+[DEPLOY.md](./DEPLOY.md) for what that costs and the upgrade needed before the
+October leaderboard window.
+
 ## Status
 
 | Component | State |
