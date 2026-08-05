@@ -10,14 +10,28 @@
 set -euo pipefail
 
 DRY_RUN=false
-[ "${1:-}" = "--dry-run" ] && DRY_RUN=true
+OTP=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry-run) DRY_RUN=true ;;
+    --otp)     OTP="${2:-}"; shift ;;
+    --otp=*)   OTP="${1#--otp=}" ;;
+  esac
+  shift
+done
+
+# A one-time code is valid for about 30 seconds and there are six packages to
+# publish, so npm will often ask again partway through. An automation token
+# avoids the problem entirely — see the EOTP hint below.
+OTP_ARG=""
+[ -n "$OTP" ] && OTP_ARG="--otp=$OTP"
 
 # Dependency order: each package depends on the ones before it, and npm resolves
 # those from the registry at install time rather than from this repo.
 PACKAGES=(sdk mcp langchain eliza proxy keeperhub)
 
 echo
-echo "Arbiter — npm publish${DRY_RUN:+ (dry run)}"
+if $DRY_RUN; then echo "Arbiter — npm publish (DRY RUN)"; else echo "Arbiter — npm publish (LIVE)"; fi
 echo "=============================================================================="
 echo
 
