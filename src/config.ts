@@ -98,11 +98,14 @@ export const config = {
   caip2: isMainnet ? ALGORAND_MAINNET_CAIP2 : ALGORAND_TESTNET_CAIP2,
 
   /**
-   * USDC asset id. x402 `extra.asset` is a string, but the numeric form is kept
-   * for algod calls (opt-in checks, balance reads).
+   * USDC asset id in both forms.
+   *
+   * The @x402/avm constants are strings ("31566704"), which x402 wants for
+   * `extra.asset` but algosdk rejects for `assetIndex` — so the numeric form is
+   * converted here once rather than at every call site.
    */
-  usdcAssetId: isMainnet ? USDC_MAINNET_ASA_ID : USDC_TESTNET_ASA_ID,
-  usdcAsset: String(isMainnet ? USDC_MAINNET_ASA_ID : USDC_TESTNET_ASA_ID),
+  usdcAssetId: Number(isMainnet ? USDC_MAINNET_ASA_ID : USDC_TESTNET_ASA_ID),
+  usdcAsset: isMainnet ? USDC_MAINNET_ASA_ID : USDC_TESTNET_ASA_ID,
 
   algodUrl:
     env.ALGOD_URL ??

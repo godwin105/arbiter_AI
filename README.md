@@ -49,7 +49,7 @@ October leaderboard window.
 | `/v1/judge/transaction` EVM firewall | Working, 7/7 drain patterns pass, EIP-7702 aware |
 | `/v1/judge/counterparty` engine | Working, 5/5 cases pass against live mainnet + NFD |
 | `/v1/judge/human` marketplace | Working, consensus + reviewer reliability + payout ledger |
-| On-chain payout settlement | Ledger complete; needs a funded payout wallet |
+| On-chain payout settlement | Working — real USDC paid to a reviewer on-chain |
 | SDK, MCP server, LangChain, ElizaOS, paying proxy | Built, typechecked, runtime-verified |
 | CrewAI tools (Python) | Built; runs through the paying proxy — see below |
 | KeeperHub integration | Working, real Sepolia transaction executed |
@@ -128,6 +128,40 @@ npm run demo:human
 - Per-reviewer reliability accrues from consensus agreement over time
 
 Worker API (`/v1/work/*`) is unpriced: reviewers are the supply side.
+
+### Paying reviewers
+
+```bash
+npm run settle -- --dry-run    # check everything, send nothing
+npm run settle                 # pay
+```
+
+Two rules govern this, and both cost something to follow:
+
+**Claim before broadcasting.** Payouts move to `settling` with an attempt id
+*before* any transaction is sent, and that attempt id is written into the
+transaction's note field. A process that dies mid-flight therefore leaves money
+unpaid rather than paid twice — unpaid is recoverable by a person reading the
+stuck rows against the ledger, paid twice is not.
+
+**Check the payee before paying.** Every payout address goes through Arbiter's
+own `/v1/judge/counterparty` engine first. Not decoration: a USDC transfer to an
+account that has not opted in is rejected by the protocol, so paying blind burns
+a fee and leaves the reviewer unpaid with no explanation. Blocked payouts stay
+pending and are retried once the reviewer opts in.
+
+```
+[PAID]  0.150000 USDC -> GBRO5EM4JM57PDPS…
+        txid  SIEXIGX6KQKA4D4PTOUL7R6M5BDP4BIUEW2TTOIFZHBU233LSKWQ
+        note  arbiter:payout:pay_msft8csu_rfq0ch
+
+[SKIP]  0.150000 USDC -> OEQWDYGTEXMDWSH2…
+        Arbiter blocked this payee: Counterparty has not opted in to the asset
+```
+
+The payout account is configured separately from `PAY_TO` on purpose. `PAY_TO`
+accumulates revenue and its key never needs to be on a server; the payout
+account holds working capital only, so a compromised host cannot drain earnings.
 
 ### Design rule: the caller has already paid
 

@@ -21,6 +21,7 @@
     "demo:human": "tsx scripts/demo-human.ts",
     "demo:budget": "tsx scripts/demo-budget.ts",
     "preflight": "tsx scripts/preflight.ts",
+    "settle": "tsx scripts/settle-payouts.ts",
     "demo:evm": "tsx scripts/demo-evm.ts",
     "demo:keeperhub": "tsx scripts/demo-keeperhub.ts",
     "demo": "npm run demo:attacks && npm run demo:counterparty && npm run demo:human",

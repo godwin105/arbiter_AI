@@ -60,7 +60,15 @@ export interface PayoutEntry {
   taskId: string;
   amountUsdc: string;
   payoutAddress: string;
-  status: "pending" | "settled" | "failed";
+  /**
+   * `settling` is claimed-but-not-confirmed. It exists so a process that dies
+   * between broadcasting a transfer and recording the result leaves the payout
+   * stuck rather than pending — a stuck payout is inspected and resolved by a
+   * person, a pending one would be paid a second time.
+   */
+  status: "pending" | "settling" | "settled" | "failed";
+  /** Groups the payouts settled by one transfer, and tags that transfer's note. */
+  attemptId?: string;
   createdAt: string;
   settledAt?: string;
   /** Algorand transaction id once settled on-chain. */
@@ -366,6 +374,85 @@ export class MarketplaceStore {
 
   pendingPayouts(): PayoutEntry[] {
     return this.payouts.filter((p) => p.status === "pending");
+  }
+
+  /** Payouts claimed by a settlement run that never reported back. */
+  stuckPayouts(): PayoutEntry[] {
+    return this.payouts.filter((p) => p.status === "settling");
+  }
+
+  /**
+   * Claims every pending payout for one worker under a single attempt id.
+   *
+   * Claiming happens *before* anything is broadcast, so the window in which a
+   * crash could cause a double payment is closed. The cost is that a crash
+   * after claiming leaves money unpaid until someone looks — the safe direction
+   * for a payout system.
+   */
+  claimForSettlement(workerId: string, attemptId: string): PayoutEntry[] {
+    const claimed = this.payouts.filter(
+      (p) => p.workerId === workerId && p.status === "pending",
+    );
+    for (const p of claimed) {
+      p.status = "settling";
+      p.attemptId = attemptId;
+    }
+    if (claimed.length > 0) this.dirty();
+    return claimed;
+  }
+
+  /** Releases a claim without paying — used when a pre-flight check refuses. */
+  releaseClaim(attemptId: string, reason: string): void {
+    for (const p of this.payouts) {
+      if (p.attemptId === attemptId && p.status === "settling") {
+        p.status = "pending";
+        p.error = reason;
+        delete p.attemptId;
+      }
+    }
+    this.dirty();
+  }
+
+  /** Records the on-chain result for every payout in an attempt. */
+  completeAttempt(
+    attemptId: string,
+    result: { status: "settled"; txId: string } | { status: "failed"; error: string },
+  ): void {
+    const now = new Date().toISOString();
+    for (const p of this.payouts) {
+      if (p.attemptId !== attemptId) continue;
+      p.status = result.status;
+      if (result.status === "settled") {
+        p.txId = result.txId;
+        p.settledAt = now;
+        delete p.error;
+      } else {
+        p.error = result.error;
+      }
+    }
+    this.dirty();
+  }
+
+  /** Distinct workers with money owed, for a settlement run to iterate. */
+  workersOwed(): Array<{ workerId: string; payoutAddress: string; amountUsdc: number; count: number }> {
+    const byWorker = new Map<string, { payoutAddress: string; amountUsdc: number; count: number }>();
+
+    for (const p of this.payouts) {
+      if (p.status !== "pending") continue;
+      const existing = byWorker.get(p.workerId);
+      if (existing) {
+        existing.amountUsdc += Number(p.amountUsdc);
+        existing.count += 1;
+      } else {
+        byWorker.set(p.workerId, {
+          payoutAddress: p.payoutAddress,
+          amountUsdc: Number(p.amountUsdc),
+          count: 1,
+        });
+      }
+    }
+
+    return [...byWorker].map(([workerId, v]) => ({ workerId, ...v }));
   }
 
   allPayouts(): PayoutEntry[] {
