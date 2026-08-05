@@ -45,13 +45,15 @@ October leaderboard window.
 |---|---|
 | x402 payment core (Algorand, USDC, GoPlausible facilitator) | Working, verified end-to-end |
 | Bazaar discovery + `x402-global-challenge` tag | Working, verified in the 402 response |
-| `/v1/judge/transaction` firewall engine | Working, 5/5 attack cases pass |
+| `/v1/judge/transaction` Algorand firewall | Working, 5/5 attack cases pass |
+| `/v1/judge/transaction` EVM firewall | Working, 7/7 drain patterns pass, EIP-7702 aware |
 | `/v1/judge/counterparty` engine | Working, 5/5 cases pass against live mainnet + NFD |
 | `/v1/judge/human` marketplace | Working, consensus + reviewer reliability + payout ledger |
 | On-chain payout settlement | Ledger complete; needs a funded payout wallet |
 | SDK, MCP server, LangChain, ElizaOS, paying proxy | Built, typechecked, runtime-verified |
 | CrewAI tools (Python) | Built; runs through the paying proxy — see below |
-| Expo app | Not yet built |
+| KeeperHub integration | Working, real Sepolia transaction executed |
+| Reviewer app (React) | Live at `/work`, verified end-to-end with a paid question |
 
 ## The transaction firewall
 
