@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 
 import {
+  CURRENCY_KEY,
+  type FxRate,
   type Invoice,
   type InvoiceStatus,
   fetchInvoiceStatus,
+  fetchRate,
+  formatLocal,
   invoiceLink,
   walletLink,
 } from "../invoice";
@@ -20,6 +24,13 @@ export function InvoiceView({ invoice, onBack, usdcAssetId, explorerBase }: Prop
   const [status, setStatus] = useState<InvoiceStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<"link" | "address" | null>(null);
+  const [fx, setFx] = useState<FxRate | null>(null);
+
+  useEffect(() => {
+    // The client may be anywhere; this is the payee's preferred currency, shown
+    // as context rather than as anything either side transacts in.
+    void fetchRate(localStorage.getItem(CURRENCY_KEY) ?? "NGN").then(setFx);
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -61,7 +72,14 @@ export function InvoiceView({ invoice, onBack, usdcAssetId, explorerBase }: Prop
       </div>
 
       <h1 className="brand" style={{ fontSize: 40, marginTop: 8 }}>${invoice.amount}</h1>
-      <p className="tagline">USDC</p>
+      <p className="tagline">
+        USDC
+        {fx ? (
+          <span style={{ color: "var(--text-faint)", fontSize: 14 }}>
+            {" "}· about {formatLocal(Number(invoice.amount), fx.rate, fx.quote)}
+          </span>
+        ) : null}
+      </p>
 
       <div className="panel" style={{ marginTop: 24 }}>
         <div className="hero-label">From</div>

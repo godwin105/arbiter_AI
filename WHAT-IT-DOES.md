@@ -136,6 +136,37 @@ Two deliberate choices:
 
 ---
 
+## Getting paid, and keeping the books
+
+The invoice side of this does two more things worth explaining plainly.
+
+**It shows you what the money is worth where you live.** Invoice for $250 and it
+tells you that is roughly ₦340,000 today. That figure is a *guide*, not a
+promise — see below.
+
+**It keeps your books from the public ledger.** Every payment you have ever
+received is recorded on a public network, so the app can rebuild your complete
+income history from your address alone. Change laptop, clear your browser, come
+back in two years — the record is still there, because it was never ours to
+lose. You can export it as a spreadsheet, and every line carries the
+transaction reference, so an accountant or a tax office can check it
+independently instead of taking your word for it.
+
+### What this does *not* do
+
+It does **not** convert your digital dollars into naira, rupees or pesos and put
+them in your bank account. Doing that legally means being a licensed money
+transmitter in each country, with banking partners and identity checks. That is
+a regulated business, not a feature.
+
+So the exchange rates shown are for orientation. In several countries the rate
+you actually get when converting to cash differs noticeably from the published
+one. Treat the local-currency figures as "roughly what this is worth", never as
+"this is what will land in my account".
+
+What you receive is digital dollars. Where and how you turn those into local
+cash is your choice, and happens outside this app.
+
 ## How the money works
 
 There is no subscription, no sign-up, no sales call, no invoice.

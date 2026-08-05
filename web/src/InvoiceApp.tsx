@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 
 import { type Invoice, decodeInvoice } from "./invoice";
+import { Books } from "./screens/Books";
 import { InvoiceCreate } from "./screens/InvoiceCreate";
 import { InvoiceView } from "./screens/InvoiceView";
 
@@ -19,6 +20,7 @@ interface Props {
 export function InvoiceApp({ usdcAssetId, explorerBase }: Props) {
   const [fromLink, setFromLink] = useState<Invoice | null>(null);
   const [mine, setMine] = useState<Invoice | null>(null);
+  const [books, setBooks] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -73,5 +75,7 @@ export function InvoiceApp({ usdcAssetId, explorerBase }: Props) {
     );
   }
 
-  return <InvoiceCreate onCreated={setMine} onOpen={setMine} />;
+  if (books) return <Books onBack={() => setBooks(false)} explorerBase={explorerBase} />;
+
+  return <InvoiceCreate onCreated={setMine} onOpen={setMine} onBooks={() => setBooks(true)} />;
 }

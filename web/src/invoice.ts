@@ -131,3 +131,145 @@ export function listInvoices(): Invoice[] {
 export function forgetInvoice(id: string): void {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(listInvoices().filter((i) => i.id !== id)));
 }
+
+// --- FX ---------------------------------------------------------------------
+
+/**
+ * Currencies offered in the picker.
+ *
+ * Chosen for where cross-border freelancing actually happens rather than for
+ * trading volume — the point of this product is someone in Lagos or Manila
+ * being paid by a client in Berlin.
+ */
+export const CURRENCIES = [
+  { code: "NGN", name: "Nigerian naira", symbol: "₦" },
+  { code: "KES", name: "Kenyan shilling", symbol: "KSh" },
+  { code: "GHS", name: "Ghanaian cedi", symbol: "₵" },
+  { code: "ZAR", name: "South African rand", symbol: "R" },
+  { code: "INR", name: "Indian rupee", symbol: "₹" },
+  { code: "PHP", name: "Philippine peso", symbol: "₱" },
+  { code: "PKR", name: "Pakistani rupee", symbol: "₨" },
+  { code: "BRL", name: "Brazilian real", symbol: "R$" },
+  { code: "ARS", name: "Argentine peso", symbol: "$" },
+  { code: "EUR", name: "Euro", symbol: "€" },
+  { code: "GBP", name: "Pound sterling", symbol: "£" },
+] as const;
+
+export interface FxRate {
+  base: string;
+  quote: string;
+  rate: number;
+  asOf: string;
+}
+
+export async function fetchRate(quote: string): Promise<FxRate | null> {
+  try {
+    const res = await fetch(`/v1/invoice/fx?quote=${encodeURIComponent(quote)}`, {
+      signal: AbortSignal.timeout(12_000),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as FxRate;
+  } catch {
+    return null;
+  }
+}
+
+export function formatLocal(amountUsd: number, rate: number, code: string): string {
+  const value = amountUsd * rate;
+  const symbol = CURRENCIES.find((c) => c.code === code)?.symbol ?? "";
+  // Large-denomination currencies read better without decimals.
+  const decimals = value >= 1000 ? 0 : 2;
+  return `${symbol}${value.toLocaleString(undefined, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  })}`;
+}
+
+export const CURRENCY_KEY = "arbiter.invoice.currency";
+
+// --- Ledger -----------------------------------------------------------------
+
+export interface LedgerEntry {
+  txId: string;
+  from: string;
+  amountUsdc: number;
+  round: number;
+  at: string;
+  note: string | null;
+}
+
+export interface Ledger {
+  address: string;
+  count: number;
+  totalUsdc: number;
+  received: LedgerEntry[];
+}
+
+export async function fetchLedger(address: string): Promise<Ledger> {
+  const res = await fetch(`/v1/invoice/ledger?address=${encodeURIComponent(address)}`, {
+    signal: AbortSignal.timeout(25_000),
+  });
+  if (!res.ok) throw new Error(`Could not read the ledger (HTTP ${res.status}).`);
+  return (await res.json()) as Ledger;
+}
+
+/**
+ * Matches on-chain receipts against invoices raised on this device.
+ *
+ * A payment is attributed to the first unmatched invoice with the same amount
+ * raised before it arrived. Imperfect where several invoices share an amount,
+ * which is why the ledger shows unmatched receipts rather than hiding them.
+ */
+export function reconcile(
+  entries: LedgerEntry[],
+  invoices: Invoice[],
+): Array<LedgerEntry & { invoice: Invoice | null }> {
+  const claimed = new Set<string>();
+
+  return entries.map((entry) => {
+    const match =
+      invoices.find(
+        (inv) =>
+          !claimed.has(inv.id) &&
+          Math.abs(Number(inv.amount) - entry.amountUsdc) < 0.000001 &&
+          Date.parse(inv.issued) <= Date.parse(entry.at),
+      ) ?? null;
+    if (match) claimed.add(match.id);
+    return { ...entry, invoice: match };
+  });
+}
+
+/** A spreadsheet an accountant can open, with the tx id so every line is checkable. */
+export function toCsv(
+  rows: Array<LedgerEntry & { invoice: Invoice | null }>,
+  currency: string,
+  rate: number | null,
+): string {
+  const header = [
+    "date",
+    "invoice",
+    "client",
+    "description",
+    "amount_usdc",
+    rate ? `amount_${currency.toLowerCase()}` : null,
+    "from_address",
+    "transaction_id",
+  ].filter(Boolean);
+
+  const lines = rows.map((r) => {
+    const cells = [
+      r.at.slice(0, 10),
+      r.invoice?.id ?? "",
+      r.invoice?.to ?? "",
+      r.invoice?.description ?? "",
+      r.amountUsdc.toFixed(6),
+      rate ? (r.amountUsdc * rate).toFixed(2) : null,
+      r.from,
+      r.txId,
+    ].filter((c) => c !== null);
+    // Quote everything: descriptions and client names contain commas.
+    return cells.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",");
+  });
+
+  return [header.join(","), ...lines].join("\n");
+}

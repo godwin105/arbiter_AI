@@ -1,17 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { looksLikeAlgorandAddress } from "../api";
-import { type Invoice, invoiceLink, listInvoices, newInvoiceId, rememberInvoice } from "../invoice";
+import {
+  CURRENCIES,
+  CURRENCY_KEY,
+  type FxRate,
+  type Invoice,
+  fetchRate,
+  formatLocal,
+  invoiceLink,
+  listInvoices,
+  newInvoiceId,
+  rememberInvoice,
+} from "../invoice";
 
 interface Props {
   onCreated: (invoice: Invoice) => void;
   onOpen: (invoice: Invoice) => void;
+  onBooks: () => void;
 }
 
 const ADDRESS_KEY = "arbiter.invoice.address";
 const FROM_KEY = "arbiter.invoice.from";
 
-export function InvoiceCreate({ onCreated, onOpen }: Props) {
+export function InvoiceCreate({ onCreated, onOpen, onBooks }: Props) {
   // Prefilled from last time: a freelancer bills from the same name and gets
   // paid to the same address every time, and retyping 58 characters invites a
   // typo that silently sends money nowhere.
@@ -21,6 +33,14 @@ export function InvoiceCreate({ onCreated, onOpen }: Props) {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
+
+  const [currency, setCurrency] = useState(localStorage.getItem(CURRENCY_KEY) ?? "NGN");
+  const [fx, setFx] = useState<FxRate | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem(CURRENCY_KEY, currency);
+    void fetchRate(currency).then(setFx);
+  }, [currency]);
 
   const history = listInvoices();
 
@@ -52,8 +72,13 @@ export function InvoiceCreate({ onCreated, onOpen }: Props) {
 
   return (
     <form className="shell" onSubmit={submit}>
-      <h1 className="brand">Invoice</h1>
-      <p className="tagline">Get paid across borders in seconds.</p>
+      <div className="row-between">
+        <div>
+          <h1 className="brand">Invoice</h1>
+          <p className="tagline">Get paid across borders in seconds.</p>
+        </div>
+        <button type="button" className="chip" onClick={onBooks}>Books</button>
+      </div>
 
       <p className="blurb">
         Send a link. Your client pays in digital dollars, straight to you. No bank in the
@@ -77,7 +102,26 @@ export function InvoiceCreate({ onCreated, onOpen }: Props) {
       <input id="amount" value={amount} onChange={(e) => setAmount(e.target.value)}
              placeholder="250.00" inputMode="decimal"
              className={amount && !amountValid ? "invalid" : ""} />
-      <p className="hint">1 USDC is 1 US dollar.</p>
+      <p className="hint">
+        1 USDC is 1 US dollar.
+        {fx && Number(amount) > 0
+          ? ` About ${formatLocal(Number(amount), fx.rate, currency)} at today's rate.`
+          : ""}
+      </p>
+
+      <label className="label" htmlFor="cur">Show me the value in</label>
+      <select id="cur" value={currency} onChange={(e) => setCurrency(e.target.value)}
+              style={{ width: "100%", background: "var(--surface)", color: "var(--text)",
+                       border: "1px solid var(--border)", borderRadius: "var(--radius-md)",
+                       padding: "14px 16px", fontSize: 16, fontFamily: "inherit" }}>
+        {CURRENCIES.map((c) => (
+          <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
+        ))}
+      </select>
+      <p className="hint">
+        For your reference only — your client always pays in USDC. Converting to cash happens
+        wherever you choose to do it, and the rate there may differ from this one.
+      </p>
 
       <label className="label" htmlFor="addr">Where you get paid</label>
       <textarea id="addr" className={`mono${address && !addressValid ? " invalid" : ""}`}

@@ -164,3 +164,131 @@ invoiceRouter.get("/v1/invoice/status", async (req, res) => {
   res.setHeader("cache-control", "no-store");
   res.json(status);
 });
+
+// --- FX ---------------------------------------------------------------------
+
+/**
+ * Indicative exchange rates.
+ *
+ * Cached for an hour because the upstream publishes daily, and a landing-adjacent
+ * endpoint should not add a third-party call to every page view.
+ *
+ * These are reference rates. In several of the markets this app is aimed at the
+ * rate people actually transact at differs materially from the published one, so
+ * the UI labels the figure as indicative rather than presenting it as what will
+ * land in someone's account.
+ */
+const FX_TTL_MS = 60 * 60 * 1000;
+let fxCache: { at: number; rates: Record<string, number> } | null = null;
+
+async function usdRates(): Promise<Record<string, number> | null> {
+  if (fxCache && Date.now() - fxCache.at < FX_TTL_MS) return fxCache.rates;
+
+  try {
+    const res = await fetch("https://open.er-api.com/v6/latest/USD", {
+      signal: AbortSignal.timeout(6_000),
+    });
+    if (!res.ok) return fxCache?.rates ?? null;
+
+    const body = (await res.json()) as { rates?: Record<string, number> };
+    if (!body.rates) return fxCache?.rates ?? null;
+
+    fxCache = { at: Date.now(), rates: body.rates };
+    return body.rates;
+  } catch {
+    // A stale rate beats no rate; the response says how old it is.
+    return fxCache?.rates ?? null;
+  }
+}
+
+invoiceRouter.get("/v1/invoice/fx", async (req, res) => {
+  const rates = await usdRates();
+  if (!rates) {
+    res.status(503).json({ error: "fx_unavailable" });
+    return;
+  }
+
+  const quote = String(req.query["quote"] ?? "").toUpperCase();
+  res.setHeader("cache-control", "public, max-age=1800");
+
+  if (quote) {
+    const rate = rates[quote];
+    if (rate === undefined) {
+      res.status(404).json({ error: "unknown_currency", quote });
+      return;
+    }
+    res.json({ base: "USD", quote, rate, asOf: new Date(fxCache?.at ?? Date.now()).toISOString() });
+    return;
+  }
+
+  res.json({ base: "USD", rates, asOf: new Date(fxCache?.at ?? Date.now()).toISOString() });
+});
+
+// --- Ledger -----------------------------------------------------------------
+
+/**
+ * Every USDC payment an address has received.
+ *
+ * Read from the chain rather than from anything we store, so a freelancer who
+ * changes device, clears their browser, or stops using this app entirely still
+ * has a complete and verifiable record of what they were paid.
+ */
+invoiceRouter.get("/v1/invoice/ledger", async (req, res) => {
+  const address = String(req.query["address"] ?? "");
+  if (!isValidAlgorandAddress(address)) {
+    res.status(400).json({ error: "invalid_address" });
+    return;
+  }
+
+  const params = new URLSearchParams({
+    "asset-id": String(config.usdcAssetId),
+    "currency-greater-than": "0",
+    limit: "200",
+  });
+  const since = req.query["since"];
+  if (typeof since === "string" && since) params.set("after-time", since);
+
+  try {
+    const upstream = await fetch(
+      `${indexerUrl()}/v2/accounts/${address}/transactions?${params.toString()}`,
+      { signal: AbortSignal.timeout(12_000) },
+    );
+    if (!upstream.ok) {
+      res.status(502).json({ error: "indexer_unavailable" });
+      return;
+    }
+
+    const body = (await upstream.json()) as {
+      transactions?: Array<{
+        id: string;
+        sender: string;
+        "confirmed-round": number;
+        "round-time": number;
+        note?: string;
+        "asset-transfer-transaction"?: { amount: number; receiver: string };
+      }>;
+    };
+
+    const received = (body.transactions ?? [])
+      .filter((t) => t["asset-transfer-transaction"]?.receiver === address)
+      .filter((t) => (t["asset-transfer-transaction"]?.amount ?? 0) > 0)
+      .map((t) => ({
+        txId: t.id,
+        from: t.sender,
+        amountUsdc: (t["asset-transfer-transaction"]?.amount ?? 0) / 1e6,
+        round: t["confirmed-round"],
+        at: new Date(t["round-time"] * 1000).toISOString(),
+        note: t.note ? Buffer.from(t.note, "base64").toString("utf8") : null,
+      }));
+
+    res.setHeader("cache-control", "no-store");
+    res.json({
+      address,
+      count: received.length,
+      totalUsdc: Number(received.reduce((sum, r) => sum + r.amountUsdc, 0).toFixed(6)),
+      received,
+    });
+  } catch {
+    res.status(502).json({ error: "indexer_unreachable" });
+  }
+});
