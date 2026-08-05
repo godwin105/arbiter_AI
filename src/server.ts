@@ -20,6 +20,7 @@ import { workRouter } from "./routes/work.js";
 import { FilePersistence, NullPersistence } from "./marketplace/persistence.js";
 import { store } from "./marketplace/store.js";
 import { ARBITER_ICON_PNG } from "./assets/icon.js";
+import { renderLanding } from "./landing.js";
 
 export async function createApp(): Promise<express.Express> {
   // Resolved before any route is mounted: the facilitator's advertised network
@@ -104,7 +105,25 @@ export async function createApp(): Promise<express.Express> {
     pricing: PRICING,
   });
 
-  app.get("/", (_req, res) => res.json(manifest()));
+  /**
+   * One address, two audiences.
+   *
+   * A browser gets the landing page; agents and the Bazaar catalog get the JSON
+   * manifest. JSON is the default — anything that does not explicitly prefer
+   * HTML is treated as a machine, so an agent with a missing or unusual Accept
+   * header is never handed markup it cannot parse.
+   */
+  app.get("/", (req, res) => {
+    if (req.accepts(["json", "html"]) === "html") {
+      res.type("html").send(renderLanding());
+      return;
+    }
+    res.json(manifest());
+  });
+
+  // The manifest is also reachable unambiguously, for anyone who wants it
+  // without depending on content negotiation.
+  app.get("/manifest.json", (_req, res) => res.json(manifest()));
 
   // Served because the Bazaar catalog resolves merchant metadata from the
   // endpoint's own domain; the iconUrl in every route's payment requirements
