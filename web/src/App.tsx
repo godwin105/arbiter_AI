@@ -33,6 +33,10 @@ export default function App() {
 }
 
 function ReviewerApp() {
+  useEffect(() => {
+    document.title = "Arbiter — review work, get paid in USDC";
+  }, []);
+
   const [worker, setWorker] = useState<StoredWorker | null>(null);
   const [screen, setScreen] = useState<Screen>({ name: "queue" });
   const [restoring, setRestoring] = useState(true);

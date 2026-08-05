@@ -33,6 +33,14 @@ export function InvoiceApp({ usdcAssetId, explorerBase }: Props) {
     return () => window.removeEventListener("hashchange", read);
   }, []);
 
+  // The tab title is what a client sees when the link is shared or bookmarked,
+  // so it names the invoice rather than the other product in this bundle.
+  useEffect(() => {
+    document.title = fromLink
+      ? `$${fromLink.amount} USDC — invoice from ${fromLink.from}`
+      : "Arbiter — invoice, get paid in USDC";
+  }, [fromLink]);
+
   if (!ready) return <div className="centre"><div className="spinner" /></div>;
 
   if (location.hash.length > 1 && !fromLink) {
