@@ -1,0 +1,69 @@
+# Fly.io deployment for Arbiter.
+#
+# Chosen because the Global x402 Challenge requires a public HTTPS endpoint on a
+# real domain, and Fly gives that plus a persistent volume — which the
+# marketplace needs, since its state includes USDC owed to reviewers.
+#
+#   fly launch --no-deploy --copy-config
+#   fly volumes create arbiter_data --size 1 --region <region>
+#   fly secrets set PAY_TO=... PUBLIC_URL=https://<app>.fly.dev
+#   fly deploy
+
+# Fly app names are globally unique, and this one becomes the public origin
+# (https://<app>.fly.dev) that goes into PUBLIC_URL, the Bazaar listing and the
+# competition entry. Change it before the first deploy if you want a different
+# domain — changing it afterwards means re-registering the endpoint.
+app = "arbiter-x402"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "4021"
+  ARBITER_NETWORK = "testnet"
+  STATE_FILE = "/data/marketplace.json"
+  # Fly terminates TLS at its proxy, so client IPs arrive in forwarded headers.
+  TRUST_PROXY = "true"
+  # Must stay below Fly's kill_timeout so the drain finishes on its own terms.
+  SHUTDOWN_GRACE_SECONDS = "25"
+
+# PAY_TO and PUBLIC_URL are set with `fly secrets set`, not here — PAY_TO must
+# be a single consistent address for the whole competition, and committing it
+# to source control invites an accidental change.
+
+[[mounts]]
+  source = "arbiter_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 4021
+  force_https = true
+  # Never scale to zero: the leaderboard is measured during an unannounced
+  # window in October, and a cold start is a missed payment.
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    # Generous because /v1/judge/human deliberately holds connections open while
+    # it long-polls for reviewers; a low limit would read those as saturation.
+    soft_limit = 200
+    hard_limit = 250
+
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "20s"
+  method = "GET"
+  path = "/health"
+
+# Longer than SHUTDOWN_GRACE_SECONDS so in-flight paid requests finish and
+# marketplace state is flushed before the machine is killed.
+kill_signal = "SIGTERM"
+kill_timeout = "30s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

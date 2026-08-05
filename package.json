@@ -1,0 +1,45 @@
+{
+  "name": "arbiter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The judgment layer for autonomous agents. Pay-per-call verdicts over x402 on Algorand.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "clients/*"
+  ],
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\"",
+    "demo:attacks": "tsx scripts/demo-attacks.ts",
+    "demo:counterparty": "tsx scripts/demo-counterparty.ts",
+    "demo:human": "tsx scripts/demo-human.ts",
+    "demo:budget": "tsx scripts/demo-budget.ts",
+    "preflight": "tsx scripts/preflight.ts",
+    "demo:evm": "tsx scripts/demo-evm.ts",
+    "demo:keeperhub": "tsx scripts/demo-keeperhub.ts",
+    "demo": "npm run demo:attacks && npm run demo:counterparty && npm run demo:human",
+    "build:clients": "npm run build -w @arbiter/sdk -w @arbiter/mcp -w @arbiter/langchain -w @arbiter/eliza -w @arbiter/proxy -w @arbiter/keeperhub",
+    "typecheck:all": "npm run typecheck && npm run typecheck -w @arbiter/sdk -w @arbiter/mcp -w @arbiter/langchain -w @arbiter/eliza -w @arbiter/proxy -w @arbiter/keeperhub"
+  },
+  "dependencies": {
+    "@x402/avm": "^2.21.0",
+    "@x402/core": "^2.21.0",
+    "@x402/express": "^2.21.0",
+    "@x402/extensions": "^2.21.0",
+    "algosdk": "^3.5.0",
+    "express": "^5.1.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.7.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

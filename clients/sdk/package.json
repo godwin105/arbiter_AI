@@ -1,0 +1,31 @@
+{
+  "name": "@arbiter/sdk",
+  "version": "0.1.0",
+  "description": "Paying client for Arbiter — judgment for autonomous agents, settled over x402 on Algorand.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@x402/avm": "^2.21.0",
+    "@x402/core": "^2.21.0",
+    "@x402/fetch": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.0",
+    "typescript": "^5.9.3"
+  }
+}

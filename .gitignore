@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+data/*.json
+!data/.gitkeep
+.venv-*/
+.crewpkg/
+.crewsrc/
+clients/*/dist/
+.payer.json
+app/.expo/
+app/.webexport/
+app/dist/
+web/dist/
+
+# Superseded by web/ (plain React). Kept on disk as a native reference; it also
+# carries its own .git from create-expo-app, which would commit as an empty
+# gitlink.
+app/

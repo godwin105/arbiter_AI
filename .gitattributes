@@ -1,0 +1,5 @@
+# Normalise line endings so the repo is consistent regardless of platform.
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.svg text eol=lf

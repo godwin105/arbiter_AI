@@ -1,0 +1,28 @@
+{
+  "name": "@arbiter/mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing Arbiter judgment tools to any MCP-capable agent.",
+  "type": "module",
+  "bin": {
+    "arbiter-mcp": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": ["dist"],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@arbiter/sdk": "^0.1.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.0",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "ESNext",
+    // Bundler resolution rather than NodeNext: @elizaos/core@1.7 publishes its
+    // declarations with extensionless relative imports (`export * from './types'`),
+    // which NodeNext rejects with TS2834 — the effect is that every type in the
+    // package silently resolves to nothing. ElizaOS plugins are bundled anyway,
+    // so this matches how the ecosystem actually builds.
+    "moduleResolution": "bundler",
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "verbatimModuleSyntax": true,
+    "declaration": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"]
+}
