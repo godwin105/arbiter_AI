@@ -66,7 +66,7 @@ export async function renderLanding(): Promise<string> {
   </p>
   <div class="cta">
     <a class="btn btn-primary" href="/work/">Review work, earn ${esc(usdc)}</a>
-    <a class="btn btn-ghost" href="/docs">Developer docs</a>
+    <a class="btn btn-ghost" href="/about">What is this?</a>
   </div>
   <div class="facts">
     <span class="fact">Network <b>Algorand ${esc(net)}</b></span>

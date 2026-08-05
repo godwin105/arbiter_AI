@@ -22,6 +22,7 @@ import { store } from "./marketplace/store.js";
 import { ARBITER_ICON_PNG } from "./assets/icon.js";
 import { renderLanding } from "./landing/page.js";
 import { renderDocs } from "./landing/docs.js";
+import { renderAbout } from "./landing/about.js";
 
 export async function createApp(): Promise<express.Express> {
   // Resolved before any route is mounted: the facilitator's advertised network
@@ -123,6 +124,7 @@ export async function createApp(): Promise<express.Express> {
   });
 
   app.get("/docs", (_req, res) => res.type("html").send(renderDocs()));
+  app.get("/about", async (_req, res) => res.type("html").send(await renderAbout()));
 
   // The manifest is also reachable unambiguously, for anyone who wants it
   // without depending on content negotiation.

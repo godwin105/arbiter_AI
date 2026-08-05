@@ -14,6 +14,8 @@ data
 *.log
 *.md
 !README.md
+# Rendered at /about, so it has to reach the image.
+!WHAT-IT-DOES.md
 Dockerfile
 .dockerignore
 fly.toml

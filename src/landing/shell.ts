@@ -109,6 +109,26 @@ th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);ve
 th{color:var(--muted);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.6px}
 td code{font-size:13px;color:var(--text)}
 
+/* Rendered markdown (/about) */
+.prose{padding:56px 0 24px;max-width:68ch}
+.prose h1{font-size:clamp(30px,5vw,44px);margin:0 0 24px}
+.prose h2{font-size:25px;margin:44px 0 14px;padding-top:28px;border-top:1px solid var(--border)}
+.prose h2:first-of-type{border-top:none;padding-top:0}
+.prose h3{font-size:18px;margin:30px 0 8px}
+.prose p{font-size:16.5px;color:var(--muted);margin:0 0 16px}
+.prose li{font-size:16.5px;color:var(--muted);margin-bottom:10px}
+.prose strong{color:var(--text);font-weight:600}
+.prose em{color:var(--text);font-style:italic}
+.prose hr{border:none;border-top:1px solid var(--border);margin:44px 0}
+.prose blockquote{margin:0 0 20px;padding:2px 0 2px 18px;border-left:2px solid var(--accent);color:var(--text)}
+.prose blockquote p{color:var(--text)}
+.prose code{background:var(--surface);border:1px solid var(--border);border-radius:6px;
+  padding:2px 6px;font-size:13.5px;color:var(--text)}
+.prose table{margin:0 0 22px}
+.prose table td{color:var(--muted)}
+.prose table td strong{color:var(--text)}
+.prose ul{padding-left:22px}
+
 footer{padding:40px 0 72px;border-top:1px solid var(--border);color:var(--faint);font-size:13.5px}
 footer a{color:var(--muted)}
 `;
@@ -117,9 +137,9 @@ export function page(options: {
   title: string;
   description: string;
   body: string;
-  active?: "home" | "docs";
+  active?: "home" | "about" | "docs";
 }): string {
-  const nav = (href: string, label: string, key: "home" | "docs") =>
+  const nav = (href: string, label: string, key: "home" | "about" | "docs") =>
     `<a class="link" href="${href}"${options.active === key ? ' style="color:var(--text)"' : ""}>${label}</a>`;
 
   return `<!doctype html>
@@ -140,6 +160,7 @@ export function page(options: {
   <img src="/icon.png" alt="">
   <a class="name" href="/">Arbiter</a>
   ${nav("/", "Overview", "home")}
+  ${nav("/about", "What it does", "about")}
   ${nav("/docs", "Docs", "docs")}
   <a class="link" href="/work/">Review work</a>
 </div></nav>
