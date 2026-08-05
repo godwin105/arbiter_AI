@@ -125,10 +125,11 @@ Whichever host: public HTTPS, a persistent volume mounted at `STATE_FILE`,
 TestNet activity does **not** count toward the leaderboard. Promotion is one
 environment variable — everything network-specific derives from it:
 
+Set `ARBITER_NETWORK=mainnet` in your host's environment settings (Render:
+service → Environment; Fly: `fly secrets set`), redeploy, then:
+
 ```bash
-fly secrets set ARBITER_NETWORK=mainnet PAY_TO=YOUR_MAINNET_ADDRESS
-fly deploy
-npm run preflight -- https://your-app.fly.dev
+npm run preflight -- https://your-deployment.example.com
 ```
 
 `assertChallengeReady()` refuses to boot a mainnet deployment that is still
@@ -185,7 +186,7 @@ The last two are the only ones `preflight` cannot confirm for you.
 | `PUBLIC_URL` | `http://localhost:4021` | Must be the real HTTPS origin on mainnet. |
 | `PORT` | `4021` | |
 | `FACILITATOR_URL` | GoPlausible | Changing it forfeits leaderboard tracking. |
-| `STATE_FILE` | `./data/marketplace.json` | Point at a mounted volume. `off` disables. |
+| `STATE_FILE` | `./data/marketplace.json` | Point at a mounted volume. `off` disables persistence — required on Render's free plan, which has no disk. |
 | `SHUTDOWN_GRACE_SECONDS` | `25` | Keep below the platform's kill timeout. |
 | `TRUST_PROXY` | `false` | Set `true` behind a load balancer. |
 
