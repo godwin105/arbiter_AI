@@ -45,6 +45,9 @@ COPY --from=deps  /app/node_modules ./node_modules
 COPY --from=build /app/dist        ./dist
 COPY --from=web   /web/dist        ./web/dist
 COPY package.json ./
+# Rendered at /about. Without this the page falls back to a stub that looks fine
+# in a status check and is empty to a reader.
+COPY WHAT-IT-DOES.md ./
 
 # Marketplace state lives on a volume. It holds unresolved reviewer questions
 # that callers have already paid for, and the ledger of USDC owed to reviewers —
