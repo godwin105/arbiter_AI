@@ -17,7 +17,7 @@ Tools: `judge_transaction`, `judge_counterparty`, `judge_human`.
 
 ## Requires the paying sidecar
 
-These tools call `@arbiter/proxy` on loopback rather than paying x402 directly.
+These tools call `@arbiterlabs/proxy` on loopback rather than paying x402 directly.
 That is a constraint of the ecosystem, not a shortcut:
 
 - `x402` **2.18.0** ships no Algorand (AVM) scheme client — only

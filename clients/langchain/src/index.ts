@@ -6,7 +6,7 @@
  * an agent actually checks before it signs.
  */
 import { tool } from "@langchain/core/tools";
-import { ArbiterClient, type ArbiterClientOptions, formatError, formatVerdict } from "@arbiter/sdk";
+import { ArbiterClient, type ArbiterClientOptions, formatError, formatVerdict } from "@arbiterlabs/sdk";
 import { z } from "zod";
 
 export interface ArbiterToolsOptions extends ArbiterClientOptions {}
@@ -149,5 +149,5 @@ export function createArbiterTools(options: ArbiterToolsOptions | ArbiterClient)
   };
 }
 
-export { ArbiterClient } from "@arbiter/sdk";
-export type { Verdict, Decision, Finding } from "@arbiter/sdk";
+export { ArbiterClient } from "@arbiterlabs/sdk";
+export type { Verdict, Decision, Finding } from "@arbiterlabs/sdk";

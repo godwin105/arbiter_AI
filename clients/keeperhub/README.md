@@ -1,4 +1,4 @@
-# @arbiter/keeperhub
+# @arbiterlabs/keeperhub
 
 An agent that cannot execute what it has not checked.
 
@@ -8,11 +8,11 @@ a stranger unlimited spending rights is submitted just as dependably as a
 legitimate transfer. This puts judgment in front of it.
 
 ```bash
-npm install @arbiter/keeperhub
+npm install @arbiterlabs/keeperhub
 ```
 
 ```ts
-import { GuardedAgent } from "@arbiter/keeperhub";
+import { GuardedAgent } from "@arbiterlabs/keeperhub";
 
 const agent = new GuardedAgent({
   arbiterUrl: "https://arbiter-hs23.onrender.com",

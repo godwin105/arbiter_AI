@@ -20,3 +20,5 @@ web/dist/
 # carries its own .git from create-expo-app, which would commit as an empty
 # gitlink.
 app/
+__pycache__/
+*.py[cod]

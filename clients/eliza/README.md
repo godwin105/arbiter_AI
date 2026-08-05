@@ -1,13 +1,13 @@
-# @arbiter/eliza
+# @arbiterlabs/eliza
 
 ElizaOS plugin giving an agent judgment before it signs or pays.
 
 ```bash
-npm install @arbiter/eliza
+npm install @arbiterlabs/eliza
 ```
 
 ```ts
-import { arbiterPlugin } from "@arbiter/eliza";
+import { arbiterPlugin } from "@arbiterlabs/eliza";
 
 export const character = {
   name: "Treasurer",

@@ -1,5 +1,5 @@
 {
-  "name": "@arbiter/keeperhub",
+  "name": "@arbiterlabs/keeperhub",
   "version": "0.1.0",
   "description": "Judgment in front of KeeperHub \u2014 an agent that cannot execute what it has not checked.",
   "type": "module",
@@ -23,7 +23,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@arbiter/sdk": "^0.1.0"
+    "@arbiterlabs/sdk": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.7.0",

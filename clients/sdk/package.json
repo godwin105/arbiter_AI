@@ -1,5 +1,5 @@
 {
-  "name": "@arbiter/sdk",
+  "name": "@arbiterlabs/sdk",
   "version": "0.1.0",
   "description": "Paying client for Arbiter \u2014 judgment for autonomous agents, settled over x402 on Algorand.",
   "type": "module",

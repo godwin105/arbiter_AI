@@ -139,7 +139,7 @@ export async function renderLanding(): Promise<string> {
 <section>
   <h2>Two lines to integrate</h2>
   <p class="sub">Payment is invisible. The SDK answers the 402 and signs, inside a cap you set.</p>
-<pre>import { ArbiterClient } from <span class="k">"@arbiter/sdk"</span>;
+<pre>import { ArbiterClient } from <span class="k">"@arbiterlabs/sdk"</span>;
 
 const arbiter = new ArbiterClient({
   baseUrl: <span class="k">"${esc(config.publicUrl)}"</span>,

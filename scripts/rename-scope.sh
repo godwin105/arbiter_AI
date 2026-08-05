@@ -24,7 +24,7 @@ echo "Renaming $OLD_SCOPE -> $NEW_SCOPE"
 
 # Source, package manifests and docs all name the packages, and a rename that
 # updates only package.json produces installs that resolve to nothing.
-FILES=$(git ls-files | grep -E '\.(json|ts|tsx|md|sh|yaml|yml)$' || true)
+FILES=$(git ls-files | grep -E '\.(json|ts|tsx|md|sh|yaml|yml|py|toml)$' || true)
 
 for f in $FILES; do
   if grep -q "$OLD_SCOPE/" "$f" 2>/dev/null; then

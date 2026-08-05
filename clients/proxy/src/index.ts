@@ -17,7 +17,7 @@
  */
 import { createServer } from "node:http";
 
-import { ArbiterClient, ArbiterBudgetError, ArbiterError } from "@arbiter/sdk";
+import { ArbiterClient, ArbiterBudgetError, ArbiterError } from "@arbiterlabs/sdk";
 
 const PORT = Number(process.env["ARBITER_PROXY_PORT"] ?? 4030);
 const TOKEN = process.env["ARBITER_PROXY_TOKEN"];

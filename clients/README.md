@@ -5,11 +5,11 @@ for it without the integrator writing payment code.
 
 | Package | For | Pays directly |
 |---|---|---|
-| [`@arbiter/sdk`](./sdk) | TypeScript agents | yes |
-| [`@arbiter/mcp`](./mcp) | Any MCP host — Claude Code, Claude Desktop, OpenClaw | yes |
-| [`@arbiter/langchain`](./langchain) | LangChain.js | yes |
-| [`@arbiter/eliza`](./eliza) | ElizaOS | yes |
-| [`@arbiter/proxy`](./proxy) | Non-TypeScript agents | yes, on their behalf |
+| [`@arbiterlabs/sdk`](./sdk) | TypeScript agents | yes |
+| [`@arbiterlabs/mcp`](./mcp) | Any MCP host — Claude Code, Claude Desktop, OpenClaw | yes |
+| [`@arbiterlabs/langchain`](./langchain) | LangChain.js | yes |
+| [`@arbiterlabs/eliza`](./eliza) | ElizaOS | yes |
+| [`@arbiterlabs/proxy`](./proxy) | Non-TypeScript agents | yes, on their behalf |
 | [`arbiter-crewai`](./crewai) | CrewAI (Python) | via the proxy |
 
 All of them render a verdict through the same formatter, so a `BLOCK` reads
@@ -28,7 +28,7 @@ only in TypeScript. The published Python packages do not provide one:
   major version.
 
 So a Python agent cannot construct an Algorand x402 payment at all. Rather than
-ship a CrewAI tool that pretends to pay, `@arbiter/proxy` holds the key, pays,
+ship a CrewAI tool that pretends to pay, `@arbiterlabs/proxy` holds the key, pays,
 and re-exposes the judgments unpriced on loopback.
 
 This is the better arrangement even where a native client does exist: one
@@ -76,7 +76,7 @@ is not a budget.
   "mcpServers": {
     "arbiter": {
       "command": "npx",
-      "args": ["-y", "@arbiter/mcp"],
+      "args": ["-y", "@arbiterlabs/mcp"],
       "env": {
         "ARBITER_URL": "https://arbiter.example.com",
         "ARBITER_PRIVATE_KEY": "base64-64-byte-key",
@@ -93,7 +93,7 @@ Exposes `judge_transaction`, `judge_counterparty`, `judge_human`,
 ## LangChain
 
 ```ts
-import { createArbiterTools } from "@arbiter/langchain";
+import { createArbiterTools } from "@arbiterlabs/langchain";
 
 const { tools } = createArbiterTools({
   baseUrl: process.env.ARBITER_URL!,
@@ -106,7 +106,7 @@ const agent = createReactAgent({ llm, tools });
 ## ElizaOS
 
 ```ts
-import { arbiterPlugin } from "@arbiter/eliza";
+import { arbiterPlugin } from "@arbiterlabs/eliza";
 
 export const character = {
   name: "Treasurer",

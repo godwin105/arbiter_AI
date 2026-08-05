@@ -13,7 +13,7 @@
  */
 import { readFileSync } from "node:fs";
 import algosdk from "algosdk";
-import { ArbiterClient } from "@arbiter/sdk";
+import { ArbiterClient } from "@arbiterlabs/sdk";
 
 import { loadEnv, requireArbiter } from "./env.js";
 

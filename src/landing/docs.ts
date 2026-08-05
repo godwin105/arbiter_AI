@@ -166,11 +166,11 @@ POST ${esc(base)}/v1/judge/transaction
   <h2>Clients</h2>
   <table>
     <tr><th>Package</th><th>For</th></tr>
-    <tr><td><code>@arbiter/sdk</code></td><td>TypeScript. Pays x402 automatically.</td></tr>
-    <tr><td><code>@arbiter/mcp</code></td><td>Any MCP host.</td></tr>
-    <tr><td><code>@arbiter/langchain</code></td><td>LangChain.js tools.</td></tr>
-    <tr><td><code>@arbiter/eliza</code></td><td>ElizaOS plugin.</td></tr>
-    <tr><td><code>@arbiter/proxy</code></td><td>Local paying sidecar for non-TypeScript agents.</td></tr>
+    <tr><td><code>@arbiterlabs/sdk</code></td><td>TypeScript. Pays x402 automatically.</td></tr>
+    <tr><td><code>@arbiterlabs/mcp</code></td><td>Any MCP host.</td></tr>
+    <tr><td><code>@arbiterlabs/langchain</code></td><td>LangChain.js tools.</td></tr>
+    <tr><td><code>@arbiterlabs/eliza</code></td><td>ElizaOS plugin.</td></tr>
+    <tr><td><code>@arbiterlabs/proxy</code></td><td>Local paying sidecar for non-TypeScript agents.</td></tr>
     <tr><td><code>arbiter-crewai</code></td><td>CrewAI, via the sidecar.</td></tr>
   </table>
 

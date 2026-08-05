@@ -1,4 +1,4 @@
-# @arbiter/mcp
+# @arbiterlabs/mcp
 
 Judgment tools for any MCP-capable agent — Claude Code, Claude Desktop, OpenClaw,
 or your own host.
@@ -14,7 +14,7 @@ finding out afterwards.
   "mcpServers": {
     "arbiter": {
       "command": "npx",
-      "args": ["-y", "@arbiter/mcp"],
+      "args": ["-y", "@arbiterlabs/mcp"],
       "env": {
         "ARBITER_URL": "https://arbiter-hs23.onrender.com",
         "ARBITER_PRIVATE_KEY": "base64-64-byte-algorand-key",

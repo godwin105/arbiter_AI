@@ -1,13 +1,13 @@
-# @arbiter/langchain
+# @arbiterlabs/langchain
 
 LangChain tools that let an agent check an action before taking it.
 
 ```bash
-npm install @arbiter/langchain @langchain/core
+npm install @arbiterlabs/langchain @langchain/core
 ```
 
 ```ts
-import { createArbiterTools } from "@arbiter/langchain";
+import { createArbiterTools } from "@arbiterlabs/langchain";
 
 const { tools } = createArbiterTools({
   baseUrl: "https://arbiter-hs23.onrender.com",

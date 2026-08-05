@@ -185,11 +185,11 @@ you, so the clients are the product surface, not an afterthought. Full detail in
 
 | Package | For |
 |---|---|
-| `@arbiter/sdk` | TypeScript agents; pays x402 automatically |
-| `@arbiter/mcp` | Any MCP host — Claude Code, Claude Desktop, OpenClaw |
-| `@arbiter/langchain` | LangChain.js tools |
-| `@arbiter/eliza` | ElizaOS plugin |
-| `@arbiter/proxy` | Local paying sidecar for non-TypeScript agents |
+| `@arbiterlabs/sdk` | TypeScript agents; pays x402 automatically |
+| `@arbiterlabs/mcp` | Any MCP host — Claude Code, Claude Desktop, OpenClaw |
+| `@arbiterlabs/langchain` | LangChain.js tools |
+| `@arbiterlabs/eliza` | ElizaOS plugin |
+| `@arbiterlabs/proxy` | Local paying sidecar for non-TypeScript agents |
 | `arbiter-crewai` | CrewAI (Python), via the sidecar |
 
 Spend limits live in the client rather than in advice to integrators, because an
@@ -214,7 +214,7 @@ the name — ships none either, has no `algosdk` dependency, and installs *into
 the `x402` namespace*, overwriting the base package. So a Python agent cannot
 construct an Algorand x402 payment at all.
 
-`@arbiter/proxy` therefore holds the key, pays, and re-exposes the judgments
+`@arbiterlabs/proxy` therefore holds the key, pays, and re-exposes the judgments
 unpriced on loopback. That is also the better arrangement in general: one
 process holds the funded key and enforces one budget, instead of every agent
 process carrying a copy of both.

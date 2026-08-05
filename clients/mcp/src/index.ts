@@ -16,7 +16,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-import { ArbiterClient, formatError, formatVerdict } from "@arbiter/sdk";
+import { ArbiterClient, formatError, formatVerdict } from "@arbiterlabs/sdk";
 
 const client = new ArbiterClient({
   baseUrl: process.env["ARBITER_URL"] ?? "http://localhost:4021",

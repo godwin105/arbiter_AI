@@ -1,4 +1,4 @@
-# @arbiter/proxy
+# @arbiterlabs/proxy
 
 A local sidecar that pays for Arbiter calls, so agents in any language can use it.
 
@@ -6,7 +6,7 @@ A local sidecar that pays for Arbiter calls, so agents in any language can use i
 ARBITER_URL=https://arbiter-hs23.onrender.com \
 ARBITER_PRIVATE_KEY=base64-64-byte-algorand-key \
 ARBITER_MAX_SPEND_USD=10 \
-npx @arbiter/proxy
+npx @arbiterlabs/proxy
 ```
 
 Then call it over loopback, unpriced:

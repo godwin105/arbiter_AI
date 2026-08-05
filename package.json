@@ -25,8 +25,8 @@
     "demo:evm": "tsx scripts/demo-evm.ts",
     "demo:keeperhub": "tsx scripts/demo-keeperhub.ts",
     "demo": "npm run demo:attacks && npm run demo:counterparty && npm run demo:human",
-    "build:clients": "npm run build -w @arbiter/sdk -w @arbiter/mcp -w @arbiter/langchain -w @arbiter/eliza -w @arbiter/proxy -w @arbiter/keeperhub",
-    "typecheck:all": "npm run typecheck && npm run typecheck -w @arbiter/sdk -w @arbiter/mcp -w @arbiter/langchain -w @arbiter/eliza -w @arbiter/proxy -w @arbiter/keeperhub",
+    "build:clients": "npm run build -w @arbiterlabs/sdk -w @arbiterlabs/mcp -w @arbiterlabs/langchain -w @arbiterlabs/eliza -w @arbiterlabs/proxy -w @arbiterlabs/keeperhub",
+    "typecheck:all": "npm run typecheck && npm run typecheck -w @arbiterlabs/sdk -w @arbiterlabs/mcp -w @arbiterlabs/langchain -w @arbiterlabs/eliza -w @arbiterlabs/proxy -w @arbiterlabs/keeperhub",
     "publish:check": "bash scripts/publish-packages.sh --dry-run",
     "publish:packages": "bash scripts/publish-packages.sh"
   },

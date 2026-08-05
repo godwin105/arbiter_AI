@@ -10,7 +10,7 @@
  * class that reaches KeeperHub without a verdict, so an agent cannot skip the
  * check by forgetting to call it.
  */
-import { ArbiterClient, type EvmEvidence, type Verdict } from "@arbiter/sdk";
+import { ArbiterClient, type EvmEvidence, type Verdict } from "@arbiterlabs/sdk";
 import { KeeperHubClient, type KeeperHubStatus } from "./client.js";
 
 /** Selectors are taken from the decoder's table, so encode and decode agree. */

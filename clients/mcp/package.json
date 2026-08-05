@@ -1,5 +1,5 @@
 {
-  "name": "@arbiter/mcp",
+  "name": "@arbiterlabs/mcp",
   "version": "0.1.0",
   "description": "MCP server exposing Arbiter judgment tools to any MCP-capable agent.",
   "type": "module",
@@ -20,7 +20,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@arbiter/sdk": "^0.1.0",
+    "@arbiterlabs/sdk": "^0.1.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^4.1.12"
   },

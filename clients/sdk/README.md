@@ -1,4 +1,4 @@
-# @arbiter/sdk
+# @arbiterlabs/sdk
 
 Ask whether an action is safe before your agent takes it.
 
@@ -8,11 +8,11 @@ transaction that quietly hands away its wallet. This client asks
 in a few hundred milliseconds.
 
 ```bash
-npm install @arbiter/sdk
+npm install @arbiterlabs/sdk
 ```
 
 ```ts
-import { ArbiterClient } from "@arbiter/sdk";
+import { ArbiterClient } from "@arbiterlabs/sdk";
 
 const arbiter = new ArbiterClient({
   baseUrl: "https://arbiter-hs23.onrender.com",

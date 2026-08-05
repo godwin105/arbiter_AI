@@ -93,7 +93,7 @@ if $DRY_RUN; then
 else
   echo
   echo "  Published. Verify:"
-  echo "      npm view @arbiter/sdk"
+  echo "      npm view @arbiterlabs/sdk"
   echo
   echo "  Then submit the MCP server to a directory — one listing reaches more"
   echo "  agents than every other channel combined:"

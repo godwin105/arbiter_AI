@@ -12,7 +12,7 @@
  *   npm run demo:budget
  */
 import algosdk from "algosdk";
-import { ArbiterBudgetError, ArbiterClient, ArbiterError } from "@arbiter/sdk";
+import { ArbiterBudgetError, ArbiterClient, ArbiterError } from "@arbiterlabs/sdk";
 
 const BASE_URL = process.env["ARBITER_URL"] ?? "http://localhost:4021";
 

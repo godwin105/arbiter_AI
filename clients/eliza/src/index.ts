@@ -8,7 +8,7 @@
  *   ARBITER_URL, ARBITER_PRIVATE_KEY, ARBITER_MAX_SPEND_USD
  */
 import type { Action, IAgentRuntime, Memory, Plugin, State } from "@elizaos/core";
-import { ArbiterClient, formatError, formatVerdict } from "@arbiter/sdk";
+import { ArbiterClient, formatError, formatVerdict } from "@arbiterlabs/sdk";
 
 let cached: ArbiterClient | null = null;
 
@@ -245,4 +245,4 @@ export const arbiterPlugin: Plugin = {
 };
 
 export default arbiterPlugin;
-export { ArbiterClient } from "@arbiter/sdk";
+export { ArbiterClient } from "@arbiterlabs/sdk";

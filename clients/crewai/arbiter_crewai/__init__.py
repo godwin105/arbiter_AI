@@ -2,7 +2,7 @@
 
 Payment note
 ------------
-These tools talk to the Arbiter paying sidecar (``@arbiter/proxy``) on
+These tools talk to the Arbiter paying sidecar (``@arbiterlabs/proxy``) on
 loopback rather than paying x402 directly. That is not a shortcut: as of
 x402 ``2.18`` / ``x402-avm`` ``2.0.2`` the published Python packages ship no
 Algorand (AVM) scheme client, so a Python process cannot construct an

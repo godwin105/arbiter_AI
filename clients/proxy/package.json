@@ -1,5 +1,5 @@
 {
-  "name": "@arbiter/proxy",
+  "name": "@arbiterlabs/proxy",
   "version": "0.1.0",
   "description": "Local paying sidecar \u2014 lets agents in any language use Arbiter without an x402 client.",
   "type": "module",
@@ -20,7 +20,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@arbiter/sdk": "^0.1.0"
+    "@arbiterlabs/sdk": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.7.0",

@@ -8,7 +8,7 @@
  *   npx tsx scripts/ask-human.ts "Does this photo show a package at a door?"
  */
 import { readFileSync } from "node:fs";
-import { ArbiterClient } from "@arbiter/sdk";
+import { ArbiterClient } from "@arbiterlabs/sdk";
 
 import { loadEnv, requireArbiter } from "./env.js";
 
