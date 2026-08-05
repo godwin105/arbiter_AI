@@ -29,6 +29,9 @@ and can then ask for any kind of judgment without new branching logic:
 }
 ```
 
+> **New here, or explaining this to someone non-technical?**
+> [What Arbiter actually does](./WHAT-IT-DOES.md) — no code, no jargon.
+
 ## Live
 
 **https://arbiter-hs23.onrender.com** — API, and the reviewer app at
