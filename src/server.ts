@@ -20,7 +20,8 @@ import { workRouter } from "./routes/work.js";
 import { FilePersistence, NullPersistence } from "./marketplace/persistence.js";
 import { store } from "./marketplace/store.js";
 import { ARBITER_ICON_PNG } from "./assets/icon.js";
-import { renderLanding } from "./landing.js";
+import { renderLanding } from "./landing/page.js";
+import { renderDocs } from "./landing/docs.js";
 
 export async function createApp(): Promise<express.Express> {
   // Resolved before any route is mounted: the facilitator's advertised network
@@ -113,13 +114,15 @@ export async function createApp(): Promise<express.Express> {
    * HTML is treated as a machine, so an agent with a missing or unusual Accept
    * header is never handed markup it cannot parse.
    */
-  app.get("/", (req, res) => {
+  app.get("/", async (req, res) => {
     if (req.accepts(["json", "html"]) === "html") {
-      res.type("html").send(renderLanding());
+      res.type("html").send(await renderLanding());
       return;
     }
     res.json(manifest());
   });
+
+  app.get("/docs", (_req, res) => res.type("html").send(renderDocs()));
 
   // The manifest is also reachable unambiguously, for anyone who wants it
   // without depending on content negotiation.
