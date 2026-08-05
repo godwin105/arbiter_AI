@@ -174,11 +174,25 @@ export async function fetchRate(quote: string): Promise<FxRate | null> {
   }
 }
 
+/**
+ * USDC to a string that never rounds a real payment to zero.
+ *
+ * Two decimals is right for invoice-sized amounts, but the same rule renders a
+ * genuine $0.002 receipt as "$0.00" — which reads as nothing arriving. Small
+ * amounts get the precision they need instead.
+ */
+export function formatUsdc(amount: number): string {
+  if (amount === 0) return "0.00";
+  if (amount < 0.01) return amount.toFixed(6).replace(/0+$/, "").replace(/\.$/, "");
+  return amount.toFixed(2);
+}
+
 export function formatLocal(amountUsd: number, rate: number, code: string): string {
   const value = amountUsd * rate;
   const symbol = CURRENCIES.find((c) => c.code === code)?.symbol ?? "";
-  // Large-denomination currencies read better without decimals.
-  const decimals = value >= 1000 ? 0 : 2;
+  // Large-denomination currencies read better without decimals; tiny values
+  // still need enough to show they are not zero.
+  const decimals = value >= 1000 ? 0 : value < 0.01 ? 4 : 2;
   return `${symbol}${value.toLocaleString(undefined, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,

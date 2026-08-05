@@ -10,6 +10,7 @@ import {
   fetchLedger,
   fetchRate,
   formatLocal,
+  formatUsdc,
   listInvoices,
   reconcile,
   toCsv,
@@ -188,7 +189,7 @@ export function Books({ onBack, explorerBase }: Props) {
               <div key={r.txId} className="card" style={{ cursor: "default" }}>
                 <div className="row-between">
                   <span className="payout">
-                    ${r.amountUsdc.toFixed(2)}
+                    ${formatUsdc(r.amountUsdc)}
                     {local(r.amountUsdc) ? (
                       <span className="meta" style={{ marginLeft: 8 }}>≈ {local(r.amountUsdc)}</span>
                     ) : null}
