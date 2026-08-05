@@ -17,6 +17,7 @@ import { transactionRouter } from "./routes/transaction.js";
 import { counterpartyRouter } from "./routes/counterparty.js";
 import { humanRetrievalRouter, humanRouter } from "./routes/human.js";
 import { workRouter } from "./routes/work.js";
+import { invoiceRouter } from "./routes/invoice.js";
 import { FilePersistence, NullPersistence } from "./marketplace/persistence.js";
 import { store } from "./marketplace/store.js";
 import { ARBITER_ICON_PNG } from "./assets/icon.js";
@@ -153,8 +154,12 @@ export async function createApp(): Promise<express.Express> {
    */
   const webDist = fileURLToPath(new URL("../web/dist", import.meta.url));
   if (existsSync(webDist)) {
+    // One bundle, two products. The app branches on the path, so both mounts
+    // serve the same files.
     app.use("/work", express.static(webDist));
+    app.use("/invoice", express.static(webDist));
     console.log(`[arbiter] reviewer app at ${config.publicUrl}/work`);
+    console.log(`[arbiter] invoice app at ${config.publicUrl}/invoice`);
   } else {
     app.get("/work", (_req, res) => {
       res.status(503).json({
@@ -166,6 +171,10 @@ export async function createApp(): Promise<express.Express> {
 
   // Reviewers are the supply side and get paid, so the worker API is unpriced.
   app.use(workRouter);
+
+  // Narrow, free support endpoint for the invoice app. Deliberately not a
+  // substitute for /v1/judge/counterparty — no identity matching, no findings.
+  app.use(invoiceRouter);
 
   // Retrieval of an already-purchased verdict. Mounted before the paywall so a
   // long-poll that times out does not cost the caller a second payment.

@@ -162,6 +162,7 @@ export function page(options: {
   ${nav("/", "Overview", "home")}
   ${nav("/about", "What it does", "about")}
   ${nav("/docs", "Docs", "docs")}
+  <a class="link" href="/invoice/">Invoice</a>
   <a class="link" href="/work/">Review work</a>
 </div></nav>
 ${options.body}

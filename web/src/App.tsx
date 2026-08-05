@@ -10,6 +10,7 @@
 import { useEffect, useState } from "react";
 
 import { type QueuedTask, type StoredWorker, clearWorker, loadWorker, saveWorker } from "./api";
+import { InvoiceApp } from "./InvoiceApp";
 import { Earnings } from "./screens/Earnings";
 import { Queue } from "./screens/Queue";
 import { SignIn } from "./screens/SignIn";
@@ -18,6 +19,20 @@ import { TaskDetail } from "./screens/TaskDetail";
 type Screen = { name: "queue" } | { name: "task"; task: QueuedTask } | { name: "earnings" };
 
 export default function App() {
+  // One bundle serves both products; the path decides which. They share the
+  // styling and the API client, and neither needs a router.
+  if (location.pathname.startsWith("/invoice")) {
+    return (
+      <InvoiceApp
+        usdcAssetId={import.meta.env.VITE_USDC_ASSET ?? "10458941"}
+        explorerBase={import.meta.env.VITE_EXPLORER ?? "https://lora.algokit.io/testnet"}
+      />
+    );
+  }
+  return <ReviewerApp />;
+}
+
+function ReviewerApp() {
   const [worker, setWorker] = useState<StoredWorker | null>(null);
   const [screen, setScreen] = useState<Screen>({ name: "queue" });
   const [restoring, setRestoring] = useState(true);

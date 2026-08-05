@@ -116,6 +116,27 @@ export async function renderLanding(): Promise<string> {
 </section>
 
 <section>
+  <h2>Built on it: cross-border invoicing</h2>
+  <p class="sub">
+    A freelancer in Lagos billing a client in Berlin waits days and loses about 7% to get
+    paid. Send a link instead — the client pays in digital dollars, it arrives in seconds,
+    and the fee is a fraction of a cent.
+  </p>
+  <ul class="plain">
+    <li><strong>The payee is checked before the client is asked to pay.</strong> The same
+        engine behind <code>/v1/judge/counterparty</code> catches an address that cannot
+        receive — a payment there does not bounce, it silently never arrives.</li>
+    <li><strong>Nothing is stored.</strong> The invoice lives inside its own link, so the
+        amount and your client's name never reach our servers or logs.</li>
+    <li><strong>The receipt is the ledger.</strong> Payment is read from the chain, so it
+        does not depend on us saying it was paid.</li>
+  </ul>
+  <div class="cta">
+    <a class="btn btn-ghost" href="/invoice/">Create an invoice</a>
+  </div>
+</section>
+
+<section>
   <h2>Two lines to integrate</h2>
   <p class="sub">Payment is invisible. The SDK answers the 402 and signs, inside a cap you set.</p>
 <pre>import { ArbiterClient } from <span class="k">"@arbiter/sdk"</span>;
