@@ -1,0 +1,75 @@
+# Render blueprint for Arbiter.
+#
+# Deploy: push this repo to GitHub, then Render Dashboard -> New -> Blueprint
+# and point it at the repo. PAY_TO and PUBLIC_URL are marked sync:false, so
+# Render prompts for them rather than reading them from source control.
+#
+# ---------------------------------------------------------------------------
+# READ THIS BEFORE RELYING ON THE FREE PLAN
+#
+# Free web services on Render cannot attach a persistent disk and spin down
+# after 15 minutes without traffic. For Arbiter that splits the product in two:
+#
+#   Stateless and fully fine on free:
+#     /v1/judge/transaction   — decodes and scores; holds nothing
+#     /v1/judge/counterparty  — reads the chain; holds nothing
+#
+#   Degraded on free:
+#     /v1/judge/human         — reviewer registrations, open questions and the
+#                               USDC payout ledger live in memory and are lost
+#                               on every spin-down. Reviewer tokens stop working
+#                               and owed payouts disappear.
+#
+# STATE_FILE is therefore set to "off" here rather than pointing at a path that
+# cannot persist. Losing state loudly is better than a service that believes it
+# saved something it did not.
+#
+# Before the October leaderboard window, move to a paid plan: cold starts cost
+# real settled volume, and by then the payout ledger holds real money. The
+# `plan` and `disk` changes needed are marked below.
+# ---------------------------------------------------------------------------
+
+services:
+  - type: web
+    name: arbiter
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    region: oregon
+    plan: free # paid: change to `starter` and uncomment the disk block below
+    healthCheckPath: /health
+
+    # Paid plans only. Uncomment together with `plan: starter`, and set
+    # STATE_FILE to /data/marketplace.json.
+    # disk:
+    #   name: arbiter-data
+    #   mountPath: /data
+    #   sizeGB: 1
+
+    envVars:
+      - key: ARBITER_NETWORK
+        value: testnet # mainnet before the leaderboard window
+
+      # Prompted at deploy rather than committed. PAY_TO must stay fixed for the
+      # whole competition — the leaderboard rolls up volume by it, so changing it
+      # splits the entry in two.
+      - key: PAY_TO
+        sync: false
+      # https://<service>.onrender.com, or a custom domain.
+      - key: PUBLIC_URL
+        sync: false
+
+      # "off" disables persistence. On a paid plan with the disk above, set this
+      # to /data/marketplace.json instead.
+      - key: STATE_FILE
+        value: "off"
+
+      # Render terminates TLS at its proxy, so client IPs arrive forwarded.
+      - key: TRUST_PROXY
+        value: "true"
+
+      - key: SHUTDOWN_GRACE_SECONDS
+        value: "20"
+
+      - key: LOG_LEVEL
+        value: "info"

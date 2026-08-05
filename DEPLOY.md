@@ -56,32 +56,69 @@ The `-v arbiter_data:/data` is not optional in any long-lived deployment. That
 volume holds unresolved reviewer questions that callers have already paid for,
 and the ledger of USDC owed to reviewers. Without it, a redeploy destroys both.
 
-## 4. Deploy to Fly.io
+## 4. Deploy to Render
 
-Fly is used here because the challenge needs public HTTPS on a real domain and
-the marketplace needs a persistent volume.
+Render builds from this repo's `Dockerfile` using `render.yaml`.
+
+1. Push this repo to GitHub.
+2. Render Dashboard → **New** → **Blueprint**, point it at the repo.
+3. It prompts for `PAY_TO` and `PUBLIC_URL` (marked `sync: false` so they are
+   never committed). `PUBLIC_URL` is `https://<service>.onrender.com`.
+4. Deploy, then verify:
+
+```bash
+npm run preflight -- https://<service>.onrender.com
+```
+
+### The free plan splits this product in two
+
+Free Render web services **cannot attach a persistent disk** and **spin down
+after 15 minutes** without traffic. That does not affect Arbiter uniformly:
+
+| Route | Free plan |
+|---|---|
+| `/v1/judge/transaction` | Fine. Stateless — decodes and scores, holds nothing. |
+| `/v1/judge/counterparty` | Fine. Stateless — reads the chain, holds nothing. |
+| `/v1/judge/human` | **Degraded.** Reviewer registrations, open questions and the USDC payout ledger live in memory and vanish on every spin-down. Reviewer tokens stop working; owed payouts disappear. |
+
+`render.yaml` therefore sets `STATE_FILE=off` rather than pointing at a path
+that cannot persist. Losing state loudly beats a service that believes it saved
+something it did not.
+
+The free Postgres alternative is worse here: 1GB, and it **expires 30 days after
+creation**. That is not where a payout ledger goes.
+
+### Upgrading before the leaderboard window
+
+Two changes in `render.yaml`, both marked in the file:
+
+```yaml
+plan: starter          # was: free
+disk:
+  name: arbiter-data
+  mountPath: /data
+  sizeGB: 1
+```
+
+and set `STATE_FILE=/data/marketplace.json`.
+
+Do this before October. Cold starts cost settled volume during a window whose
+timing is not announced, and by then the payout ledger holds real money.
+
+## 4b. Deploy to Fly.io (alternative)
+
+`fly.toml` and `scripts/deploy-fly.sh` are kept and working. Fly gives explicit
+region control and a persistent volume on any paid plan, but has no free tier:
 
 ```bash
 fly launch --no-deploy --copy-config
 fly volumes create arbiter_data --size 1 --region iad
 fly secrets set PAY_TO=YOUR_ADDRESS PUBLIC_URL=https://your-app.fly.dev
 fly deploy
-fly logs
 ```
 
-`PAY_TO` and `PUBLIC_URL` are set as secrets rather than committed to
-`fly.toml`, so the one value that must never drift cannot be changed by an
-ordinary config edit.
-
-Then:
-
-```bash
-npm run preflight -- https://your-app.fly.dev
-```
-
-Any other host works the same way. The requirements are: public HTTPS, a
-persistent volume mounted at `STATE_FILE`, `SIGTERM` for shutdown with at least
-30s of grace, and no scale-to-zero.
+Whichever host: public HTTPS, a persistent volume mounted at `STATE_FILE`,
+`SIGTERM` with at least 30s of grace, and no scale-to-zero.
 
 ## 5. Promote to MainNet
 
