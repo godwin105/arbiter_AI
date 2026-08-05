@@ -1,5 +1,7 @@
 # @arbiterlabs/mcp
 
+<!-- mcp-name: io.github.godwin105/arbiter -->
+
 Judgment tools for any MCP-capable agent — Claude Code, Claude Desktop, OpenClaw,
 or your own host.
 

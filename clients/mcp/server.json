@@ -1,0 +1,54 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.godwin105/arbiter",
+  "description": "Is this transaction safe to sign? Decodes what it really does and answers allow, warn or block.",
+  "repository": {
+    "url": "https://github.com/godwin105/arbiter_AI",
+    "source": "github"
+  },
+  "version": "0.1.1",
+  "websiteUrl": "https://arbiter-hs23.onrender.com",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@arbiterlabs/mcp",
+      "version": "0.1.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "ARBITER_URL",
+          "description": "Arbiter deployment to call. Defaults to the hosted service.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string",
+          "default": "https://arbiter-hs23.onrender.com"
+        },
+        {
+          "name": "ARBITER_PRIVATE_KEY",
+          "description": "Base64-encoded 64-byte Algorand private key used to pay for calls. The account needs USDC and must be opted in to the USDC asset. Without it every request stops at the paywall.",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "ARBITER_MAX_SPEND_USD",
+          "description": "Lifetime spending cap for this process, in USD. Enforced before anything is signed.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "number",
+          "default": "25"
+        },
+        {
+          "name": "ARBITER_MAX_PRICE_PER_CALL",
+          "description": "Refuse any single call priced above this, in USD.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "number",
+          "default": "1"
+        }
+      ]
+    }
+  ]
+}
