@@ -48,7 +48,7 @@ services:
 
     envVars:
       - key: ARBITER_NETWORK
-        value: testnet # mainnet before the leaderboard window
+        value: mainnet
 
       # Prompted at deploy rather than committed. PAY_TO must stay fixed for the
       # whole competition — the leaderboard rolls up volume by it, so changing it
