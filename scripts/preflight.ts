@@ -8,10 +8,11 @@
  *
  *   npm run preflight -- https://arbiter.example.com
  */
-const target = (process.argv[2] ?? process.env["PUBLIC_URL"] ?? "http://localhost:4021").replace(
-  /\/$/,
-  "",
-);
+// ARBITER_URL is accepted because every other script in this directory uses it;
+// reading only PUBLIC_URL meant an `ARBITER_URL=https://... npm run preflight`
+// quietly graded whatever was listening on localhost and reported it as a pass.
+const explicit = process.argv[2] ?? process.env["ARBITER_URL"] ?? process.env["PUBLIC_URL"];
+const target = (explicit ?? "http://localhost:4021").replace(/\/$/, "");
 
 const CHALLENGE_TAG = "x402-global-challenge";
 const USDC = { mainnet: 31566704, testnet: 10458941 } as const;
@@ -54,6 +55,9 @@ function decodePaymentRequired(res: Response): Record<string, any> | null {
 }
 
 console.log(`\nArbiter preflight — ${target}\n`);
+if (!explicit) {
+  console.log("  (no target given; defaulting to localhost. Pass a URL to check a deployment.)");
+}
 console.log("=".repeat(78));
 
 // --- 1. HTTPS ---------------------------------------------------------------
@@ -300,8 +304,10 @@ if (blockingFailures.length > 0) {
   process.exit(1);
 }
 
+// Naming the target again here: the verdict is about one deployment, and the
+// header has scrolled off by the time anyone reads this line.
 console.log(
-  "\nAll blocking requirements satisfied." +
+  `\nAll blocking requirements satisfied for ${target}.` +
     (isMainnet
       ? " Endpoint is mainnet and should appear on the leaderboard once it settles a payment.\n"
       : " Still on testnet — promote to mainnet before the leaderboard window.\n"),
