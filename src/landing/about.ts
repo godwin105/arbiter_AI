@@ -43,6 +43,9 @@ export async function renderAbout(): Promise<string> {
       "normal payment from a trap. Arbiter is the second opinion they buy before they act. " +
       "Explained without jargon.",
     active: "about",
+    path: "/about",
+    // The one page long enough that a reader loses their place in it.
+    progress: true,
     body: `<div class="wrap"><article class="prose">${html}</article></div>`,
   });
 

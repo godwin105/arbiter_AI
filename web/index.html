@@ -2,12 +2,73 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="../icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#06090d" />
     <title>Arbiter — Review work, get paid in USDC</title>
+    <meta
+      name="description"
+      content="Answer questions AI agents cannot settle alone, or invoice a client across borders. Paid in USDC on Algorand."
+    />
+    <!-- Root-absolute, not relative: this one bundle is mounted at both /work
+         and /invoice, and a ../ path only resolves correctly by accident of how
+         deep the mount happens to be. -->
+    <link rel="icon" href="/icon.png" />
+    <link rel="apple-touch-icon" href="/icon.png" />
+    <!-- The reviewer app is a link people are handed, so it gets a preview.
+         Left as the app's own copy rather than the landing page's, because the
+         two are shared in different conversations. -->
+    <meta property="og:site_name" content="Arbiter" />
+    <meta property="og:title" content="Arbiter — Review work, get paid in USDC" />
+    <meta
+      property="og:description"
+      content="Answer questions AI agents cannot settle alone, or invoice a client across borders. Paid in USDC on Algorand."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/icon.png" />
+    <meta name="twitter:card" content="summary" />
+    <!-- Neither app is a search destination — both are reached from the landing
+         page or from a link, and an indexed empty shell would rank for nothing
+         useful and describe the product badly. -->
+    <meta name="robots" content="noindex,follow" />
+    <!-- Painted before the bundle parses, so a phone on a slow connection sees
+         the app's own background rather than a white flash. -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #06090d;
+        color: #e8eff5;
+      }
+      .noscript {
+        max-width: 36rem;
+        margin: 0 auto;
+        padding: 4rem 1.5rem;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        line-height: 1.6;
+      }
+      .noscript a {
+        color: #56d3a0;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <!-- A React root with scripting off is a blank dark rectangle with no
+         explanation. This says which of the two it is and where to go instead. -->
+    <noscript>
+      <div class="noscript">
+        <h1>JavaScript is required</h1>
+        <p>
+          Arbiter's reviewer and invoice apps sign and read transactions in your browser, so they
+          need JavaScript enabled.
+        </p>
+        <p>
+          The service itself does not: <a href="/docs">the documentation</a> and
+          <a href="/">the overview</a> work without it, and the API is plain HTTP.
+        </p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

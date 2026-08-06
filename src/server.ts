@@ -24,6 +24,7 @@ import { ARBITER_ICON_PNG } from "./assets/icon.js";
 import { renderLanding } from "./landing/page.js";
 import { renderDocs } from "./landing/docs.js";
 import { renderAbout } from "./landing/about.js";
+import { renderNotFound } from "./landing/not-found.js";
 
 export async function createApp(): Promise<express.Express> {
   // Resolved before any route is mounted: the facilitator's advertised network
@@ -35,6 +36,35 @@ export async function createApp(): Promise<express.Express> {
   app.disable("x-powered-by");
   if (config.env.TRUST_PROXY) app.set("trust proxy", true);
   app.use(express.json({ limit: "1mb" }));
+
+  /**
+   * Baseline response headers.
+   *
+   * Set on everything rather than on the pages alone, because the JSON API is
+   * the part a browser-based agent loads with someone's signing key in scope.
+   *
+   * No Content-Security-Policy here: the pages inline their own style and
+   * script deliberately (one request, no blocking assets), so a useful policy
+   * needs per-response nonces, and a policy loose enough to allow
+   * 'unsafe-inline' would only claim protection it does not provide.
+   */
+  app.use((_req, res, next) => {
+    // Stops a browser from second-guessing our content types, which is what
+    // turns an uploaded-looking response into an executable one.
+    res.setHeader("x-content-type-options", "nosniff");
+    // Framing this origin is only useful for dressing it up as something else.
+    res.setHeader("x-frame-options", "DENY");
+    // Full URLs of paid endpoints should not leak to third parties on click.
+    res.setHeader("referrer-policy", "strict-origin-when-cross-origin");
+    res.setHeader("cross-origin-opener-policy", "same-origin");
+    res.setHeader("permissions-policy", "geolocation=(), microphone=(), camera=(), payment=()");
+    // Only meaningful over TLS, and asserting it from a local http server would
+    // pin a developer's browser to https://localhost.
+    if (config.publicUrl.startsWith("https://")) {
+      res.setHeader("strict-transport-security", "max-age=31536000; includeSubDomains");
+    }
+    next();
+  });
 
   /**
    * CORS.
@@ -116,16 +146,70 @@ export async function createApp(): Promise<express.Express> {
    * HTML is treated as a machine, so an agent with a missing or unusual Accept
    * header is never handed markup it cannot parse.
    */
+  /**
+   * Pages are cheap to regenerate and are read far more often than they change,
+   * so they are cached at the edge but revalidated in the background. The
+   * landing page carries verdicts computed on request, so its own freshness
+   * window is short enough that "computed just now" stays true.
+   */
+  const sendPage = (res: express.Response, html: string, maxAgeSeconds: number) => {
+    res.setHeader(
+      "cache-control",
+      `public, max-age=0, s-maxage=${maxAgeSeconds}, stale-while-revalidate=86400`,
+    );
+    res.type("html").send(html);
+  };
+
   app.get("/", async (req, res) => {
     if (req.accepts(["json", "html"]) === "html") {
-      res.type("html").send(await renderLanding());
+      sendPage(res, await renderLanding(), 60);
       return;
     }
     res.json(manifest());
   });
 
-  app.get("/docs", (_req, res) => res.type("html").send(renderDocs()));
-  app.get("/about", async (_req, res) => res.type("html").send(await renderAbout()));
+  app.get("/docs", (_req, res) => sendPage(res, renderDocs(), 600));
+  app.get("/about", async (_req, res) => sendPage(res, await renderAbout(), 600));
+
+  /**
+   * Crawlability.
+   *
+   * Both are generated from publicUrl rather than committed as files: this same
+   * image runs on testnet and mainnet deployments under different hostnames,
+   * and a sitemap advertising the wrong origin is worse than none at all.
+   *
+   * The paid endpoints are disallowed. They are POST-only and would answer a
+   * crawler with 402, but there is no reason to spend a crawl budget — ours or
+   * theirs — discovering that.
+   */
+  app.get("/robots.txt", (_req, res) => {
+    res.type("text/plain").send(
+      [
+        "User-agent: *",
+        "Disallow: /v1/",
+        "Disallow: /work/",
+        "Disallow: /invoice/",
+        "",
+        `Sitemap: ${config.publicUrl}/sitemap.xml`,
+        "",
+      ].join("\n"),
+    );
+  });
+
+  app.get("/sitemap.xml", (_req, res) => {
+    const urls = ["/", "/about", "/docs"]
+      .map(
+        (path) =>
+          `<url><loc>${config.publicUrl}${path}</loc>` +
+          `<changefreq>weekly</changefreq>` +
+          `<priority>${path === "/" ? "1.0" : "0.8"}</priority></url>`,
+      )
+      .join("");
+    res.type("application/xml").send(
+      `<?xml version="1.0" encoding="UTF-8"?>` +
+        `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}</urlset>`,
+    );
+  });
 
   // The manifest is also reachable unambiguously, for anyone who wants it
   // without depending on content negotiation.
@@ -161,12 +245,18 @@ export async function createApp(): Promise<express.Express> {
     console.log(`[arbiter] reviewer app at ${config.publicUrl}/work`);
     console.log(`[arbiter] invoice app at ${config.publicUrl}/invoice`);
   } else {
-    app.get("/work", (_req, res) => {
+    // Both mounts answer, not just /work: an unbuilt bundle is a build mistake,
+    // and saying so is more useful than the terminal 404 either path would
+    // otherwise fall through to.
+    const notBuilt: express.RequestHandler = (_req, res) => {
       res.status(503).json({
-        error: "reviewer_app_not_built",
-        message: "Run `npm --prefix web run build` to build the reviewer app.",
+        error: "web_app_not_built",
+        message: "Run `npm --prefix web run build` to build the reviewer and invoice apps.",
       });
-    });
+    };
+    app.get("/work", notBuilt);
+    app.get("/invoice", notBuilt);
+    console.warn("[arbiter] web/dist is missing — /work and /invoice will answer 503");
   }
 
   // Reviewers are the supply side and get paid, so the worker API is unpriced.
@@ -188,7 +278,16 @@ export async function createApp(): Promise<express.Express> {
   app.use(counterpartyRouter);
   app.use(humanRouter);
 
-  app.use((_req, res) => {
+  /**
+   * Terminal 404, negotiated the same way `/` is: a person who mistyped a URL
+   * gets a page they can navigate out of, and anything parsing JSON keeps the
+   * error shape it already handles.
+   */
+  app.use((req, res) => {
+    if (req.accepts(["json", "html"]) === "html") {
+      res.status(404).type("html").send(renderNotFound(req.path));
+      return;
+    }
     res.status(404).json({ error: "not_found" });
   });
 

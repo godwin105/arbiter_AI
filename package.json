@@ -15,7 +15,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\"",
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
     "demo:attacks": "tsx scripts/demo-attacks.ts",
     "demo:counterparty": "tsx scripts/demo-counterparty.ts",
     "demo:human": "tsx scripts/demo-human.ts",
