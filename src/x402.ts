@@ -34,6 +34,13 @@ function makeAccepts(resolved: ResolvedFacilitator) {
     price,
     extra: {
       asset: config.usdcAsset,
+      // The tag the challenge indexer actually reads. The route-level `tags`
+      // array below lands in `resource.tags` of the 402 header, which is good
+      // for humans but is not what gets indexed: every entry in the Bazaar
+      // catalog carries its challenge tag here, at `accepts[].extra.tag`.
+      // Setting only the array meant the routes advertised the tag in a field
+      // nothing rolls volume up by.
+      tag: CHALLENGE_TAG,
       // Lets the facilitator co-sign the fee-covering transaction in the atomic
       // group, so callers do not need ALGO for gas to pay in USDC.
       ...(resolved.feePayer ? { feePayer: resolved.feePayer } : {}),

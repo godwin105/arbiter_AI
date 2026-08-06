@@ -125,15 +125,32 @@ for (const route of ROUTES) {
 
 // --- 4. Challenge tag -------------------------------------------------------
 
+// Two places, and only one of them counts. `resource.tags` is the readable
+// array in the 402 header; `accepts[].extra.tag` is the field the Bazaar
+// catalog stores and the leaderboard rolls volume up by. Checking only the
+// array passed this entry for two days while the indexed field was empty.
 for (const [route, pr] of Object.entries(requirements)) {
   const tags: string[] = pr?.resource?.tags ?? [];
-  if (tags.includes(CHALLENGE_TAG)) {
-    add(`Challenge tag ${route}`, "pass", `"${CHALLENGE_TAG}" present.`);
-  } else {
+  const inArray = tags.includes(CHALLENGE_TAG);
+  const accepts: any[] = pr?.accepts ?? [];
+  const indexed = accepts.length > 0 && accepts.every((a) => a?.extra?.tag === CHALLENGE_TAG);
+
+  if (indexed && inArray) {
+    add(`Challenge tag ${route}`, "pass", `"${CHALLENGE_TAG}" in accepts[].extra.tag and resource.tags.`);
+  } else if (!indexed) {
     add(
       `Challenge tag ${route}`,
       "fail",
-      `Missing "${CHALLENGE_TAG}" tag — volume from this route will not be attributed.`,
+      `accepts[].extra.tag is not "${CHALLENGE_TAG}" — this is the field the Bazaar indexes, ` +
+        `so volume from this route will not be attributed` +
+        (inArray ? " even though resource.tags carries the tag." : "."),
+    );
+  } else {
+    add(
+      `Challenge tag ${route}`,
+      "warn",
+      `Indexed tag is set, but resource.tags omits "${CHALLENGE_TAG}".`,
+      false,
     );
   }
 }
