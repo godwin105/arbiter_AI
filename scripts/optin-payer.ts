@@ -14,8 +14,12 @@
 import { readFileSync } from "node:fs";
 import algosdk from "algosdk";
 
-const ALGOD = "https://testnet-api.algonode.cloud";
-const USDC_TESTNET = 10458941;
+const ALGOD = process.env["ALGOD_URL"] ?? "https://testnet-api.algonode.cloud";
+const USDC_ASSET = Number(process.env["USDC_ASSET"] ?? 10458941);
+// Derived, not hardcoded: output that names the wrong network is how someone
+// signs a mainnet transaction believing it is a test.
+const IS_MAINNET = USDC_ASSET === 31566704;
+const NET = IS_MAINNET ? "mainnet" : "testnet";
 
 const payer = JSON.parse(readFileSync("./.payer.json", "utf8")) as {
   address: string;
@@ -34,7 +38,7 @@ const optIn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
   sender: payer.address,
   receiver: payer.address,
   amount: 0,
-  assetIndex: USDC_TESTNET,
+  assetIndex: USDC_ASSET,
   suggestedParams: params,
 });
 
@@ -42,7 +46,7 @@ const encoded = Buffer.from(optIn.toByte()).toString("base64");
 
 console.log("\nOpting payer in to USDC\n");
 console.log(`  account: ${payer.address}`);
-console.log(`  asset:   ${USDC_TESTNET} (testnet USDC)\n`);
+console.log(`  asset:   ${USDC_ASSET} (testnet USDC)\n`);
 
 // --- Check it before signing it --------------------------------------------
 
@@ -76,7 +80,7 @@ console.log(`  confirmed in round ${confirmed.confirmedRound}`);
 console.log(`  explorer: https://lora.algokit.io/testnet/transaction/${txid}\n`);
 
 const account = await algod.accountInformation(payer.address).do();
-const holding = account.assets?.find((a) => Number(a.assetId) === USDC_TESTNET);
+const holding = account.assets?.find((a) => Number(a.assetId) === USDC_ASSET);
 console.log(`  assets opted in: ${account.totalAssetsOptedIn}`);
 console.log(`  USDC slot:       ${holding ? "present" : "MISSING"}`);
 console.log(`  min balance:     ${(Number(account.minBalance) / 1e6).toFixed(6)} ALGO\n`);
