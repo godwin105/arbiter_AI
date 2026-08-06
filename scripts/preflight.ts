@@ -137,19 +137,19 @@ for (const [route, pr] of Object.entries(requirements)) {
 
   if (indexed && inArray) {
     add(`Challenge tag ${route}`, "pass", `"${CHALLENGE_TAG}" in accepts[].extra.tag and resource.tags.`);
-  } else if (!indexed) {
-    add(
-      `Challenge tag ${route}`,
-      "fail",
-      `accepts[].extra.tag is not "${CHALLENGE_TAG}" — this is the field the Bazaar indexes, ` +
-        `so volume from this route will not be attributed` +
-        (inArray ? " even though resource.tags carries the tag." : "."),
-    );
   } else {
+    // Non-blocking on purpose. The leaderboard attributes by payTo address, not
+    // by this tag — verified against /data/leaderboards, which offers no tag
+    // filter at all. The tag still belongs in extra (nearly every catalogued
+    // resource carries it there) but a missing one does not cost attribution,
+    // and failing the entry over it would be a false alarm.
     add(
       `Challenge tag ${route}`,
       "warn",
-      `Indexed tag is set, but resource.tags omits "${CHALLENGE_TAG}".`,
+      !indexed
+        ? `accepts[].extra.tag is not "${CHALLENGE_TAG}". Catalog discovery only — ` +
+          `attribution is by payTo, checked separately below.`
+        : `Indexed tag is set, but resource.tags omits "${CHALLENGE_TAG}".`,
       false,
     );
   }
@@ -279,6 +279,51 @@ if (payTo) {
   }
 }
 
+// --- 9b. The entry is actually on the leaderboard ---------------------------
+//
+// Every other check here verifies an input to attribution — the tag, the payTo,
+// the network. This one reads the output. The leaderboard ranks by payTo
+// address and exposes no tag filter, so appearing on it under the right network
+// and asset is the only direct evidence that settled volume is being counted.
+//
+// Absence is not a failure: a correctly configured entry that has not yet
+// settled a payment is legitimately missing, which is a different problem from
+// a misconfigured one.
+
+if (payTo && isMainnet) {
+  const slug = "algorand-mainnet";
+  const url =
+    `https://facilitator.goplausible.xyz/data/leaderboards` +
+    `?cat=merchants&network=${slug}&asset=USDC&range=all&limit=200`;
+  try {
+    const { res, body } = await json(url);
+    if (!res.ok) {
+      add("Leaderboard attribution", "warn", `Leaderboard unavailable (HTTP ${res.status}).`, false);
+    } else {
+      const items: any[] = (body as any)?.items ?? [];
+      const entry = items.find((i) => i?.address === payTo);
+      if (entry) {
+        add(
+          "Leaderboard attribution",
+          "pass",
+          `Rank ${entry.rank} of ${items.length} — $${Number(entry.volume).toFixed(4)} ` +
+            `across ${entry.settles} settlement(s), listed as "${entry.label}".`,
+        );
+      } else {
+        add(
+          "Leaderboard attribution",
+          "warn",
+          `${payTo.slice(0, 10)}... is not on the Algorand mainnet USDC leaderboard yet. ` +
+            `Expected until the first mainnet payment settles.`,
+          false,
+        );
+      }
+    }
+  } catch (err) {
+    add("Leaderboard attribution", "warn", `Lookup failed: ${(err as Error).message}`, false);
+  }
+}
+
 // --- 10. Discovery metadata -------------------------------------------------
 
 for (const path of ["/icon.png", "/.well-known/x402", "/health"]) {
@@ -323,9 +368,16 @@ if (blockingFailures.length > 0) {
 
 // Naming the target again here: the verdict is about one deployment, and the
 // header has scrolled off by the time anyone reads this line.
+// Report what was observed, not what is expected to happen. The leaderboard
+// check above already knows the answer, so predicting it here would restate a
+// hope as a forecast when the fact is in hand.
+const listed = checks.find((c) => c.name === "Leaderboard attribution");
+
 console.log(
   `\nAll blocking requirements satisfied for ${target}.` +
-    (isMainnet
-      ? " Endpoint is mainnet and should appear on the leaderboard once it settles a payment.\n"
-      : " Still on testnet — promote to mainnet before the leaderboard window.\n"),
+    (!isMainnet
+      ? " Still on testnet — promote to mainnet before the leaderboard window.\n"
+      : listed?.status === "pass"
+        ? ` Listed on the Algorand mainnet USDC leaderboard: ${listed.detail}\n`
+        : " Endpoint is mainnet; settle a payment to appear on the leaderboard.\n"),
 );
