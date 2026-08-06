@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { TopBar } from "../components/Chrome";
 import {
   CURRENCY_KEY,
   type FxRate,
@@ -61,137 +62,202 @@ export function InvoiceView({ invoice, onBack, usdcAssetId, explorerBase }: Prop
   const paid = status?.paid ?? false;
 
   return (
-    <div className="shell">
-      {onBack ? (
-        <button className="link" onClick={onBack}>← New invoice</button>
-      ) : null}
+    <>
+      <TopBar
+        name="Invoice"
+        onBrandClick={onBack}
+        right={
+          paid ? (
+            <span className="chip" data-done="true">
+              Paid
+            </span>
+          ) : null
+        }
+      />
 
-      <div className="row-between" style={{ marginTop: onBack ? 20 : 0 }}>
-        <span className="meta">{invoice.id}</span>
-        <span className="meta">{new Date(invoice.issued).toLocaleDateString()}</span>
-      </div>
-
-      <h1 className="brand" style={{ fontSize: 40, marginTop: 8 }}>${invoice.amount}</h1>
-      <p className="tagline">
-        USDC
-        {fx ? (
-          <span style={{ color: "var(--text-faint)", fontSize: 14 }}>
-            {" "}· about {formatLocal(Number(invoice.amount), fx.rate, fx.quote)}
-          </span>
+      <div className="shell wide fade-in">
+        {onBack ? (
+          <button className="link" onClick={onBack}>
+            ← New invoice
+          </button>
         ) : null}
-      </p>
 
-      <div className="panel" style={{ marginTop: 24 }}>
-        <div className="hero-label">From</div>
-        <div style={{ fontSize: 17, marginTop: 4 }}>{invoice.from}</div>
-        <div className="hero-label" style={{ marginTop: 16 }}>To</div>
-        <div style={{ fontSize: 17, marginTop: 4 }}>{invoice.to}</div>
-        <div className="hero-label" style={{ marginTop: 16 }}>For</div>
-        <div style={{ fontSize: 17, marginTop: 4 }}>{invoice.description}</div>
-        {invoice.note ? (
-          <>
-            <div className="hero-label" style={{ marginTop: 16 }}>Terms</div>
-            <div style={{ fontSize: 15, marginTop: 4, color: "var(--text-muted)" }}>{invoice.note}</div>
-          </>
-        ) : null}
+        <div className="split" style={{ marginTop: onBack ? 14 : 0 }}>
+          <div>
+            <div className="row-between">
+              <span className="meta">{invoice.id}</span>
+              <span className="meta">{new Date(invoice.issued).toLocaleDateString()}</span>
+            </div>
+
+            <h1 className="brand" style={{ fontSize: "clamp(40px,12vw,54px)", marginTop: 10 }}>
+              ${invoice.amount}
+            </h1>
+            <p className="tagline">
+              USDC
+              {fx ? (
+                <span style={{ color: "var(--text-faint)", fontSize: 14 }}>
+                  {" "}
+                  · about {formatLocal(Number(invoice.amount), fx.rate, fx.quote)}
+                </span>
+              ) : null}
+            </p>
+
+            <div className="panel" style={{ marginTop: 22 }}>
+              <div className="kv">
+                <div className="hero-label">From</div>
+                <div className="panel-value">{invoice.from}</div>
+              </div>
+              <div className="kv">
+                <div className="hero-label">To</div>
+                <div className="panel-value">{invoice.to}</div>
+              </div>
+              <div className="kv">
+                <div className="hero-label">For</div>
+                <div className="panel-value">{invoice.description}</div>
+              </div>
+              {invoice.note ? (
+                <div className="kv">
+                  <div className="hero-label">Terms</div>
+                  <div className="panel-value" style={{ fontSize: 15, color: "var(--text-muted)" }}>
+                    {invoice.note}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div>
+            {/* --- Paid ------------------------------------------------------ */}
+            {paid && status?.payment ? (
+              <div className="panel good fade-in">
+                <div className="hero-label" style={{ color: "var(--accent)" }}>
+                  ✓ Paid
+                </div>
+                <div style={{ fontSize: 21, fontWeight: 700, marginTop: 6 }}>
+                  ${status.payment.amountUsdc.toFixed(2)} USDC received
+                </div>
+                <p className="hint" style={{ marginTop: 8 }}>
+                  {new Date(status.payment.at).toLocaleString()} · from{" "}
+                  <span className="mono">{status.payment.from.slice(0, 10)}…</span>
+                </p>
+                <p className="hint">
+                  <a
+                    href={`${explorerBase}/transaction/${status.payment.txId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View the payment on the public ledger →
+                  </a>
+                </p>
+                <p className="note">
+                  This is the receipt. Anyone can verify it independently — it does not rely on
+                  us saying so.
+                </p>
+              </div>
+            ) : null}
+
+            {/* --- Cannot receive -------------------------------------------- */}
+            {!paid && status && !status.canReceive ? (
+              <div className="panel bad fade-in">
+                <div className="hero-label" style={{ color: "var(--danger)" }}>
+                  Do not pay yet
+                </div>
+                <p style={{ margin: "8px 0 0", fontSize: 15 }}>{status.reason}</p>
+                <p className="note">
+                  Checked automatically before you were asked to pay. Sending anyway would lose
+                  the payment silently — it would not bounce back.
+                </p>
+              </div>
+            ) : null}
+
+            {/* --- Ready to pay ---------------------------------------------- */}
+            {!paid && status?.canReceive ? (
+              <div className="fade-in">
+                <p className="eyebrow">pay this invoice</p>
+                <p className="hint" style={{ margin: "0 0 14px" }}>
+                  Send exactly <strong>${invoice.amount} USDC</strong> on Algorand to the address
+                  below. It arrives in seconds.
+                </p>
+
+                <a
+                  className="button"
+                  href={walletLink(invoice, usdcAssetId)}
+                  style={{ textDecoration: "none", marginTop: 0 }}
+                >
+                  Open in wallet
+                </a>
+
+                <p className="label">Or send manually</p>
+                <div className="panel" style={{ marginTop: 0 }}>
+                  <div className="mono" style={{ fontSize: 13, wordBreak: "break-all" }}>
+                    {invoice.address}
+                  </div>
+                  <button
+                    className="chip"
+                    data-done={copied === "address"}
+                    style={{ marginTop: 12 }}
+                    onClick={() => void copy(invoice.address, "address")}
+                  >
+                    {copied === "address" ? "Copied" : "Copy address"}
+                  </button>
+                </div>
+                <p className="hint" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span className="pips" aria-hidden="true">
+                    <i className="on" />
+                  </span>
+                  Watching the ledger — this page updates itself when the money arrives.
+                </p>
+              </div>
+            ) : null}
+
+            {status?.degraded ? (
+              <p className="hint" style={{ marginTop: 14 }}>
+                The ledger is slow to respond right now, so payment status may be behind. It is
+                not a sign anything is wrong.
+              </p>
+            ) : null}
+
+            {!status && !error ? (
+              <div className="panel" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div className="spinner" />
+                <span className="hint" style={{ margin: 0 }}>
+                  Checking the ledger…
+                </span>
+              </div>
+            ) : null}
+            {error ? <p className="error">{error}</p> : null}
+
+            {/* --- Share (freelancer only) ----------------------------------- */}
+            {onBack ? (
+              <>
+                <p className="eyebrow" style={{ marginTop: 32 }}>
+                  send this to your client
+                </p>
+                <div className="panel" style={{ marginTop: 0 }}>
+                  <div
+                    className="mono"
+                    style={{ fontSize: 12, wordBreak: "break-all", color: "var(--text-muted)" }}
+                  >
+                    {invoiceLink(invoice)}
+                  </div>
+                  <button
+                    className="chip"
+                    data-done={copied === "link"}
+                    style={{ marginTop: 12 }}
+                    onClick={() => void copy(invoiceLink(invoice), "link")}
+                  >
+                    {copied === "link" ? "Copied" : "Copy link"}
+                  </button>
+                </div>
+                <p className="note">
+                  The whole invoice is inside this link. We do not store it, so the link is the
+                  only copy — but it also means it keeps working no matter what happens to us.
+                </p>
+              </>
+            ) : null}
+          </div>
+        </div>
       </div>
-
-      {/* --- Paid ---------------------------------------------------------- */}
-      {paid && status?.payment ? (
-        <div className="panel" style={{ borderColor: "var(--accent)", marginTop: 16 }}>
-          <div className="hero-label" style={{ color: "var(--accent)" }}>Paid</div>
-          <div style={{ fontSize: 21, fontWeight: 700, marginTop: 6 }}>
-            ${status.payment.amountUsdc.toFixed(2)} USDC received
-          </div>
-          <p className="hint" style={{ marginTop: 8 }}>
-            {new Date(status.payment.at).toLocaleString()} · from{" "}
-            <span className="mono">{status.payment.from.slice(0, 10)}…</span>
-          </p>
-          <p className="hint">
-            <a href={`${explorerBase}/transaction/${status.payment.txId}`}
-               target="_blank" rel="noreferrer">
-              View the payment on the public ledger →
-            </a>
-          </p>
-          <p className="note">
-            This is the receipt. Anyone can verify it independently — it does not rely on us
-            saying so.
-          </p>
-        </div>
-      ) : null}
-
-      {/* --- Cannot receive ------------------------------------------------ */}
-      {!paid && status && !status.canReceive ? (
-        <div className="panel" style={{ borderColor: "var(--danger)", marginTop: 16 }}>
-          <div className="hero-label" style={{ color: "var(--danger)" }}>Do not pay yet</div>
-          <p style={{ margin: "8px 0 0", fontSize: 15 }}>{status.reason}</p>
-          <p className="note">
-            Checked automatically before you were asked to pay. Sending anyway would lose the
-            payment silently — it would not bounce back.
-          </p>
-        </div>
-      ) : null}
-
-      {/* --- Ready to pay -------------------------------------------------- */}
-      {!paid && status?.canReceive ? (
-        <>
-          <h2 className="title" style={{ fontSize: 19, marginTop: 28 }}>Pay this invoice</h2>
-          <p className="hint" style={{ marginBottom: 14 }}>
-            Send exactly <strong>${invoice.amount} USDC</strong> on Algorand to the address
-            below. It arrives in seconds.
-          </p>
-
-          <a className="button" href={walletLink(invoice, usdcAssetId)}
-             style={{ display: "block", textAlign: "center", textDecoration: "none", marginTop: 0 }}>
-            Open in wallet
-          </a>
-
-          <p className="label">Or send manually</p>
-          <div className="panel">
-            <div className="mono" style={{ fontSize: 13, wordBreak: "break-all" }}>
-              {invoice.address}
-            </div>
-            <button className="chip" style={{ marginTop: 12 }}
-                    onClick={() => void copy(invoice.address, "address")}>
-              {copied === "address" ? "Copied" : "Copy address"}
-            </button>
-          </div>
-          <p className="hint">
-            Checking for payment automatically — this page updates itself when the money
-            arrives.
-          </p>
-        </>
-      ) : null}
-
-      {status?.degraded ? (
-        <p className="hint" style={{ marginTop: 14 }}>
-          The ledger is slow to respond right now, so payment status may be behind. It is not
-          a sign anything is wrong.
-        </p>
-      ) : null}
-
-      {!status && !error ? <p className="hint" style={{ marginTop: 20 }}>Checking…</p> : null}
-      {error ? <p className="error">{error}</p> : null}
-
-      {/* --- Share (freelancer only) --------------------------------------- */}
-      {onBack ? (
-        <>
-          <h2 className="title" style={{ fontSize: 19, marginTop: 36 }}>Send this to your client</h2>
-          <div className="panel">
-            <div className="mono" style={{ fontSize: 12, wordBreak: "break-all", color: "var(--text-muted)" }}>
-              {invoiceLink(invoice)}
-            </div>
-            <button className="chip" style={{ marginTop: 12 }}
-                    onClick={() => void copy(invoiceLink(invoice), "link")}>
-              {copied === "link" ? "Copied" : "Copy link"}
-            </button>
-          </div>
-          <p className="note">
-            The whole invoice is inside this link. We do not store it, so the link is the only
-            copy — but it also means it keeps working no matter what happens to us.
-          </p>
-        </>
-      ) : null}
-    </div>
+    </>
   );
 }

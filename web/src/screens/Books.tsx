@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { looksLikeAlgorandAddress } from "../api";
+import { TopBar } from "../components/Chrome";
 import {
   CURRENCIES,
   CURRENCY_KEY,
@@ -86,137 +87,211 @@ export function Books({ onBack, explorerBase }: Props) {
     URL.revokeObjectURL(url);
   }
 
-  const local = (usd: number) =>
-    fx ? formatLocal(usd, fx.rate, currency) : null;
+  const local = (usd: number) => (fx ? formatLocal(usd, fx.rate, currency) : null);
 
   return (
-    <div className="shell">
-      <button className="link" onClick={onBack}>← Invoices</button>
-      <h1 className="brand" style={{ fontSize: 30, marginTop: 16 }}>Books</h1>
-      <p className="tagline" style={{ fontSize: 15 }}>Everything you have been paid.</p>
+    <>
+      <TopBar
+        name="Invoice"
+        onBrandClick={onBack}
+        right={
+          <button type="button" className="chip" onClick={onBack}>
+            Invoices
+          </button>
+        }
+      />
 
-      <label className="label" htmlFor="addr">Your payout address</label>
-      <textarea id="addr" className={`mono${address && !addressValid ? " invalid" : ""}`}
-                value={address} onChange={(e) => setAddress(e.target.value.toUpperCase())}
-                placeholder="Your 58-character Algorand address" rows={3} spellCheck={false} />
-      <p className="hint">
-        Read straight from the public ledger, so this works on any device — even one that has
-        never seen your invoices.
-      </p>
+      <div className="shell wide fade-in">
+        <button className="link" onClick={onBack}>
+          ← Invoices
+        </button>
 
-      <label className="label" htmlFor="cur">Show amounts in</label>
-      <select id="cur" value={currency} onChange={(e) => setCurrency(e.target.value)}
-              style={{ width: "100%", background: "var(--surface)", color: "var(--text)",
-                       border: "1px solid var(--border)", borderRadius: "var(--radius-md)",
-                       padding: "14px 16px", fontSize: 16, fontFamily: "inherit" }}>
-        {CURRENCIES.map((c) => (
-          <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
-        ))}
-      </select>
+        <p className="eyebrow" style={{ marginTop: 14 }}>
+          books
+        </p>
+        <h1 className="brand" style={{ fontSize: "clamp(26px,6vw,32px)" }}>
+          Everything you have been paid.
+        </h1>
 
-      {loading ? <p className="hint" style={{ marginTop: 20 }}>Reading the ledger…</p> : null}
-      {error ? <p className="error">{error}</p> : null}
-
-      {rows ? (
-        <>
-          <div className="hero" style={{ marginTop: 24 }}>
-            <div className="hero-label">Received all time</div>
-            <div className="hero-value">${total.toFixed(2)}</div>
-            <div className="hero-unit">
-              USDC{local(total) ? ` · about ${local(total)}` : ""}
-            </div>
-          </div>
-
-          <div className="stats">
-            <div className="stat">
-              <div className="stat-value">${thisMonth.toFixed(2)}</div>
-              <div className="stat-label">This month</div>
-            </div>
-            <div className="stat">
-              <div className="stat-value">{received.length}</div>
-              <div className="stat-label">Payments</div>
-            </div>
-            <div className="stat">
-              <div className="stat-value">${outstandingTotal.toFixed(2)}</div>
-              <div className="stat-label">Outstanding</div>
-            </div>
-          </div>
-
-          {fx ? (
-            <p className="note">
-              Rates are indicative, published {new Date(fx.asOf).toLocaleDateString()} — 1 USD ≈{" "}
-              {fx.rate.toLocaleString()} {currency}. What you actually receive when converting
-              to cash depends on where you convert, and in some markets differs noticeably from
-              the published rate. Treat these figures as a guide, not a quote.
-            </p>
-          ) : null}
-
-          {outstanding.length > 0 ? (
-            <>
-              <h2 className="title" style={{ fontSize: 19, marginTop: 32 }}>Outstanding</h2>
-              <p className="hint" style={{ marginBottom: 12 }}>
-                Raised on this device, no matching payment found yet.
-              </p>
-              {outstanding.map((inv) => (
-                <div key={inv.id} className="card" style={{ cursor: "default" }}>
-                  <div className="row-between">
-                    <span className="payout">${inv.amount} USDC</span>
-                    <span className="meta">{inv.id}</span>
-                  </div>
-                  <p className="question-preview">{inv.description}</p>
-                  <div className="row-between">
-                    <span className="meta">{inv.to}</span>
-                    <span className="meta">{new Date(inv.issued).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              ))}
-            </>
-          ) : null}
-
-          <div className="row-between" style={{ marginTop: 32, marginBottom: 12 }}>
-            <h2 className="title" style={{ fontSize: 19 }}>Payments received</h2>
-            {received.length > 0 ? (
-              <button className="chip" onClick={downloadCsv}>Export CSV</button>
-            ) : null}
-          </div>
-
-          {received.length === 0 ? (
+        <div className="split" style={{ marginTop: 22 }}>
+          <div>
+            <label className="label" htmlFor="addr" style={{ marginTop: 0 }}>
+              Your payout address
+            </label>
+            <textarea
+              id="addr"
+              className={`mono${address && !addressValid ? " invalid" : ""}`}
+              value={address}
+              onChange={(e) => setAddress(e.target.value.toUpperCase())}
+              placeholder="Your 58-character Algorand address"
+              rows={3}
+              spellCheck={false}
+            />
             <p className="hint">
-              No payments to this address yet. They appear here within seconds of arriving.
+              Read straight from the public ledger, so this works on any device — even one that
+              has never seen your invoices.
             </p>
-          ) : (
-            received.map((r) => (
-              <div key={r.txId} className="card" style={{ cursor: "default" }}>
-                <div className="row-between">
-                  <span className="payout">
-                    ${formatUsdc(r.amountUsdc)}
-                    {local(r.amountUsdc) ? (
-                      <span className="meta" style={{ marginLeft: 8 }}>≈ {local(r.amountUsdc)}</span>
-                    ) : null}
-                  </span>
-                  <span className="meta">{new Date(r.at).toLocaleDateString()}</span>
-                </div>
-                <p className="question-preview">
-                  {r.invoice ? r.invoice.description : "Payment (no matching invoice on this device)"}
-                </p>
-                <div className="row-between">
-                  <span className="meta">{r.invoice ? r.invoice.to : `from ${r.from.slice(0, 10)}…`}</span>
-                  <a className="meta" href={`${explorerBase}/transaction/${r.txId}`}
-                     target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
-                    Receipt →
-                  </a>
-                </div>
-              </div>
-            ))
-          )}
 
-          <p className="note">
-            Every line above is a real transaction on a public ledger. The CSV includes the
-            transaction id for each one, so an accountant or a tax authority can verify the
-            income independently rather than taking your word for it.
-          </p>
-        </>
-      ) : null}
-    </div>
+            <label className="label" htmlFor="cur">
+              Show amounts in
+            </label>
+            <select id="cur" value={currency} onChange={(e) => setCurrency(e.target.value)}>
+              {CURRENCIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name} ({c.code})
+                </option>
+              ))}
+            </select>
+
+            {loading ? (
+              <p className="hint" style={{ marginTop: 18 }}>
+                Reading the ledger…
+              </p>
+            ) : null}
+            {error ? <p className="error">{error}</p> : null}
+          </div>
+
+          <div>
+            {rows ? (
+              <div className="fade-in">
+                <div className="hero" style={{ marginTop: 0 }}>
+                  <div className="hero-label">Received all time</div>
+                  <div className="hero-value">${total.toFixed(2)}</div>
+                  <div className="hero-unit">
+                    USDC{local(total) ? ` · about ${local(total)}` : ""}
+                  </div>
+                </div>
+
+                <div className="stats">
+                  <div className="stat">
+                    <div className="stat-value">${thisMonth.toFixed(2)}</div>
+                    <div className="stat-label">This month</div>
+                  </div>
+                  <div className="stat">
+                    <div className="stat-value">{received.length}</div>
+                    <div className="stat-label">Payments</div>
+                  </div>
+                  <div className="stat">
+                    <div className="stat-value">${outstandingTotal.toFixed(2)}</div>
+                    <div className="stat-label">Outstanding</div>
+                  </div>
+                </div>
+
+                {fx ? (
+                  <p className="note">
+                    Rates are indicative, published {new Date(fx.asOf).toLocaleDateString()} — 1
+                    USD ≈ {fx.rate.toLocaleString()} {currency}. What you actually receive when
+                    converting to cash depends on where you convert, and in some markets differs
+                    noticeably from the published rate. Treat these figures as a guide, not a
+                    quote.
+                  </p>
+                ) : null}
+              </div>
+            ) : (
+              <div className="empty">
+                <div className="empty-glyph" aria-hidden="true">
+                  ∑
+                </div>
+                <p className="empty-title">Your income, from the ledger</p>
+                <p className="empty-body">
+                  Enter the address you get paid to. Nothing is uploaded — the totals are read
+                  from the public chain in your browser.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {rows ? (
+          <>
+            {outstanding.length > 0 ? (
+              <>
+                <h2 className="title" style={{ fontSize: 19, marginTop: 40 }}>
+                  Outstanding
+                </h2>
+                <p className="hint" style={{ marginBottom: 12 }}>
+                  Raised on this device, no matching payment found yet.
+                </p>
+                <div className="card-grid">
+                  {outstanding.map((inv) => (
+                    <div key={inv.id} className="card">
+                      <div className="row-between">
+                        <span className="payout">${inv.amount} USDC</span>
+                        <span className="meta">{inv.id}</span>
+                      </div>
+                      <p className="question-preview">{inv.description}</p>
+                      <div className="row-between">
+                        <span className="meta">{inv.to}</span>
+                        <span className="meta">{new Date(inv.issued).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : null}
+
+            <div className="row-between" style={{ marginTop: 40, marginBottom: 12 }}>
+              <h2 className="title" style={{ fontSize: 19 }}>
+                Payments received
+              </h2>
+              {received.length > 0 ? (
+                <button className="chip" onClick={downloadCsv}>
+                  Export CSV
+                </button>
+              ) : null}
+            </div>
+
+            {received.length === 0 ? (
+              <p className="hint">
+                No payments to this address yet. They appear here within seconds of arriving.
+              </p>
+            ) : (
+              <div className="card-grid">
+                {received.map((r) => (
+                  <div key={r.txId} className="card">
+                    <div className="row-between">
+                      <span className="payout">
+                        ${formatUsdc(r.amountUsdc)}
+                        {local(r.amountUsdc) ? (
+                          <span className="meta" style={{ marginLeft: 8 }}>
+                            ≈ {local(r.amountUsdc)}
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="meta">{new Date(r.at).toLocaleDateString()}</span>
+                    </div>
+                    <p className="question-preview">
+                      {r.invoice
+                        ? r.invoice.description
+                        : "Payment (no matching invoice on this device)"}
+                    </p>
+                    <div className="row-between">
+                      <span className="meta">
+                        {r.invoice ? r.invoice.to : `from ${r.from.slice(0, 10)}…`}
+                      </span>
+                      <a
+                        className="meta"
+                        href={`${explorerBase}/transaction/${r.txId}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: "var(--accent)" }}
+                      >
+                        Receipt →
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <p className="note">
+              Every line above is a real transaction on a public ledger. The CSV includes the
+              transaction id for each one, so an accountant or a tax authority can verify the
+              income independently rather than taking your word for it.
+            </p>
+          </>
+        ) : null}
+      </div>
+    </>
   );
 }

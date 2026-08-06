@@ -7,9 +7,10 @@
  * Navigation is a small state machine rather than a router: four screens and one
  * linear flow, so a router would add a dependency without removing complexity.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { type QueuedTask, type StoredWorker, clearWorker, loadWorker, saveWorker } from "./api";
+import { Toast } from "./components/Chrome";
 import { InvoiceApp } from "./InvoiceApp";
 import { Earnings } from "./screens/Earnings";
 import { Queue } from "./screens/Queue";
@@ -41,6 +42,19 @@ function ReviewerApp() {
   const [screen, setScreen] = useState<Screen>({ name: "queue" });
   const [restoring, setRestoring] = useState(true);
 
+  // A submitted answer leaves the screen it came from, so the confirmation has
+  // to live above the screens rather than inside the one being unmounted.
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<number | undefined>(undefined);
+
+  function announce(message: string) {
+    window.clearTimeout(toastTimer.current);
+    setToast(message);
+    toastTimer.current = window.setTimeout(() => setToast(null), 3200);
+  }
+
+  useEffect(() => () => window.clearTimeout(toastTimer.current), []);
+
   // A reviewer who has already signed in should land straight in the queue.
   useEffect(() => {
     setWorker(loadWorker());
@@ -61,45 +75,46 @@ function ReviewerApp() {
         onRegistered={(registered) => {
           saveWorker(registered);
           setWorker(registered);
-        }}
-      />
-    );
-  }
-
-  if (screen.name === "task") {
-    return (
-      <TaskDetail
-        baseUrl={worker.baseUrl}
-        token={worker.token}
-        task={screen.task}
-        onDone={() => setScreen({ name: "queue" })}
-        onCancel={() => setScreen({ name: "queue" })}
-      />
-    );
-  }
-
-  if (screen.name === "earnings") {
-    return (
-      <Earnings
-        baseUrl={worker.baseUrl}
-        token={worker.token}
-        onBack={() => setScreen({ name: "queue" })}
-        onSignOut={() => {
-          clearWorker();
-          setWorker(null);
-          setScreen({ name: "queue" });
+          announce(`Welcome, ${registered.displayName}`);
         }}
       />
     );
   }
 
   return (
-    <Queue
-      baseUrl={worker.baseUrl}
-      token={worker.token}
-      displayName={worker.displayName}
-      onOpenTask={(task) => setScreen({ name: "task", task })}
-      onOpenEarnings={() => setScreen({ name: "earnings" })}
-    />
+    <>
+      {screen.name === "task" ? (
+        <TaskDetail
+          baseUrl={worker.baseUrl}
+          token={worker.token}
+          task={screen.task}
+          onDone={(payoutUsdc) => {
+            setScreen({ name: "queue" });
+            announce(`Answer submitted · $${payoutUsdc} USDC queued`);
+          }}
+          onCancel={() => setScreen({ name: "queue" })}
+        />
+      ) : screen.name === "earnings" ? (
+        <Earnings
+          baseUrl={worker.baseUrl}
+          token={worker.token}
+          onBack={() => setScreen({ name: "queue" })}
+          onSignOut={() => {
+            clearWorker();
+            setWorker(null);
+            setScreen({ name: "queue" });
+          }}
+        />
+      ) : (
+        <Queue
+          baseUrl={worker.baseUrl}
+          token={worker.token}
+          displayName={worker.displayName}
+          onOpenTask={(task) => setScreen({ name: "task", task })}
+          onOpenEarnings={() => setScreen({ name: "earnings" })}
+        />
+      )}
+      {toast ? <Toast message={toast} /> : null}
+    </>
   );
 }

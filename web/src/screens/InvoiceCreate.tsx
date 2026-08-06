@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { looksLikeAlgorandAddress } from "../api";
+import { TopBar } from "../components/Chrome";
 import {
   CURRENCIES,
   CURRENCY_KEY,
@@ -46,8 +47,7 @@ export function InvoiceCreate({ onCreated, onOpen, onBooks }: Props) {
 
   const addressValid = looksLikeAlgorandAddress(address);
   const amountValid = Number(amount) > 0;
-  const canSubmit =
-    from.trim() && to.trim() && description.trim() && amountValid && addressValid;
+  const canSubmit = from.trim() && to.trim() && description.trim() && amountValid && addressValid;
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -70,111 +70,216 @@ export function InvoiceCreate({ onCreated, onOpen, onBooks }: Props) {
     onCreated(invoice);
   }
 
+  const localValue =
+    fx && amountValid ? formatLocal(Number(amount), fx.rate, currency) : null;
+
   return (
-    <form className="shell" onSubmit={submit}>
-      <div className="row-between">
-        <div>
-          <h1 className="brand">Invoice</h1>
-          <p className="tagline">Get paid across borders in seconds.</p>
-        </div>
-        <button type="button" className="chip" onClick={onBooks}>Books</button>
-      </div>
+    <>
+      <TopBar
+        name="Invoice"
+        right={
+          <button type="button" className="chip" onClick={onBooks}>
+            Books
+          </button>
+        }
+      />
 
-      <p className="blurb">
-        Send a link. Your client pays in digital dollars, straight to you. No bank in the
-        middle, no three-day wait, and fees measured in fractions of a cent instead of
-        percentages.
-      </p>
+      <form className="shell wide fade-in" onSubmit={submit}>
+        <p className="eyebrow">invoice</p>
+        <h1 className="brand">Get paid across borders in seconds.</h1>
+        <p className="blurb">
+          Send a link. Your client pays in digital dollars, straight to you. No bank in the
+          middle, no three-day wait, and fees measured in fractions of a cent instead of
+          percentages.
+        </p>
 
-      <label className="label" htmlFor="from">Your name or business</label>
-      <input id="from" value={from} onChange={(e) => setFrom(e.target.value)}
-             placeholder="Ada Okonkwo" autoComplete="organization" />
+        <div className="split">
+          <div>
+            <label className="label" htmlFor="from" style={{ marginTop: 0 }}>
+              Your name or business
+            </label>
+            <input
+              id="from"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              placeholder="Ada Okonkwo"
+              autoComplete="organization"
+            />
 
-      <label className="label" htmlFor="to">Bill to</label>
-      <input id="to" value={to} onChange={(e) => setTo(e.target.value)}
-             placeholder="Northwind Ltd" />
+            <label className="label" htmlFor="to">
+              Bill to
+            </label>
+            <input
+              id="to"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              placeholder="Northwind Ltd"
+            />
 
-      <label className="label" htmlFor="desc">For what</label>
-      <input id="desc" value={description} onChange={(e) => setDescription(e.target.value)}
-             placeholder="Website redesign — March" />
+            <label className="label" htmlFor="desc">
+              For what
+            </label>
+            <input
+              id="desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Website redesign — March"
+            />
 
-      <label className="label" htmlFor="amount">Amount (USDC)</label>
-      <input id="amount" value={amount} onChange={(e) => setAmount(e.target.value)}
-             placeholder="250.00" inputMode="decimal"
-             className={amount && !amountValid ? "invalid" : ""} />
-      <p className="hint">
-        1 USDC is 1 US dollar.
-        {fx && Number(amount) > 0
-          ? ` About ${formatLocal(Number(amount), fx.rate, currency)} at today's rate.`
-          : ""}
-      </p>
+            <label className="label" htmlFor="amount">
+              Amount (USDC)
+            </label>
+            <input
+              id="amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="250.00"
+              inputMode="decimal"
+              className={amount && !amountValid ? "invalid" : ""}
+            />
+            <p className="hint">
+              1 USDC is 1 US dollar.
+              {localValue ? ` About ${localValue} at today's rate.` : ""}
+            </p>
 
-      <label className="label" htmlFor="cur">Show me the value in</label>
-      <select id="cur" value={currency} onChange={(e) => setCurrency(e.target.value)}
-              style={{ width: "100%", background: "var(--surface)", color: "var(--text)",
-                       border: "1px solid var(--border)", borderRadius: "var(--radius-md)",
-                       padding: "14px 16px", fontSize: 16, fontFamily: "inherit" }}>
-        {CURRENCIES.map((c) => (
-          <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
-        ))}
-      </select>
-      <p className="hint">
-        For your reference only — your client always pays in USDC. Converting to cash happens
-        wherever you choose to do it, and the rate there may differ from this one.
-      </p>
+            <label className="label" htmlFor="cur">
+              Show me the value in
+            </label>
+            <select id="cur" value={currency} onChange={(e) => setCurrency(e.target.value)}>
+              {CURRENCIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name} ({c.code})
+                </option>
+              ))}
+            </select>
+            <p className="hint">
+              For your reference only — your client always pays in USDC. Converting to cash
+              happens wherever you choose to do it, and the rate there may differ from this one.
+            </p>
 
-      <label className="label" htmlFor="addr">Where you get paid</label>
-      <textarea id="addr" className={`mono${address && !addressValid ? " invalid" : ""}`}
-                value={address} onChange={(e) => setAddress(e.target.value.toUpperCase())}
-                placeholder="Your 58-character Algorand address" rows={3} spellCheck={false} />
-      <p className="hint">
-        {address.length === 0
-          ? "This is checked before your client is asked to pay, so a wrong address is caught first."
-          : addressValid
-            ? "Looks like a valid address."
-            : `${address.trim().length}/58 characters — Algorand addresses use A–Z and 2–7 only.`}
-      </p>
+            <label className="label" htmlFor="addr">
+              Where you get paid
+            </label>
+            <textarea
+              id="addr"
+              className={`mono${address && !addressValid ? " invalid" : ""}`}
+              value={address}
+              onChange={(e) => setAddress(e.target.value.toUpperCase())}
+              placeholder="Your 58-character Algorand address"
+              rows={3}
+              spellCheck={false}
+            />
+            <p className={`hint${addressValid ? " ok" : ""}`}>
+              {address.length === 0
+                ? "This is checked before your client is asked to pay, so a wrong address is caught first."
+                : addressValid
+                  ? "Looks like a valid address."
+                  : `${address.trim().length}/58 characters — Algorand addresses use A–Z and 2–7 only.`}
+            </p>
 
-      <label className="label" htmlFor="note">Terms (optional)</label>
-      <input id="note" value={note} onChange={(e) => setNote(e.target.value)}
-             placeholder="Due in 14 days" />
+            <label className="label" htmlFor="note">
+              Terms (optional)
+            </label>
+            <input
+              id="note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Due in 14 days"
+            />
 
-      <button className="button" type="submit" disabled={!canSubmit}>
-        Create invoice
-      </button>
-
-      {history.length > 0 ? (
-        <>
-          <h2 className="title" style={{ fontSize: 19, marginTop: 40 }}>Your invoices</h2>
-          <p className="hint" style={{ marginBottom: 14 }}>
-            Kept in this browser only — we never store them.
-          </p>
-          {history.map((inv) => (
-            <button key={inv.id} type="button" className="card" onClick={() => onOpen(inv)}>
-              <div className="row-between">
-                <span className="payout">${inv.amount} USDC</span>
-                <span className="meta">{inv.id}</span>
-              </div>
-              <p className="question-preview">{inv.description}</p>
-              <div className="row-between">
-                <span className="meta">{inv.to}</span>
-                <span className="meta">{new Date(inv.issued).toLocaleDateString()}</span>
-              </div>
+            <button className="button" type="submit" disabled={!canSubmit}>
+              Create invoice
             </button>
-          ))}
-        </>
-      ) : null}
+          </div>
 
-      <p className="note">
-        Invoices live entirely in their link. Nothing is stored on our servers — not the
-        amount, not your client's name.{" "}
-        <a href={invoiceLink({
-          id: "INV-DEMO", from: "Ada Okonkwo", to: "Northwind Ltd",
-          description: "Website redesign — March", amount: "250.00",
-          address: "GBRO5EM4JM57PDPS4A533V7JZNWFWB7S6IRT5UZNQYPPUN7XEEGJLEHW6I",
-          issued: new Date().toISOString(),
-        })}>See what your client sees →</a>
-      </p>
-    </form>
+          {/* What the client will see, filled in as it is typed. An invoice is
+              a document someone else reads, so the writer should be looking at
+              it rather than at a form. */}
+          <aside style={{ position: "sticky", top: 76 }}>
+            <p className="eyebrow">preview</p>
+            <div className="card" style={{ padding: "22px 20px" }}>
+              <div className="row-between">
+                <span className="meta">{history.length > 0 ? "draft" : "INV-0001"}</span>
+                <span className="meta">{new Date().toLocaleDateString()}</span>
+              </div>
+              <div className="hero-value" style={{ fontSize: 40, marginTop: 10 }}>
+                ${amountValid ? Number(amount).toFixed(2) : "0.00"}
+              </div>
+              <div className="hero-unit">USDC{localValue ? ` · about ${localValue}` : ""}</div>
+
+              <div className="kv" style={{ marginTop: 20 }}>
+                <div className="hero-label">From</div>
+                <div className="panel-value">{from.trim() || "Your name"}</div>
+              </div>
+              <div className="kv">
+                <div className="hero-label">To</div>
+                <div className="panel-value">{to.trim() || "Your client"}</div>
+              </div>
+              <div className="kv">
+                <div className="hero-label">For</div>
+                <div className="panel-value">{description.trim() || "What the work was"}</div>
+              </div>
+              {note.trim() ? (
+                <div className="kv">
+                  <div className="hero-label">Terms</div>
+                  <div className="panel-value" style={{ color: "var(--text-muted)", fontSize: 15 }}>
+                    {note.trim()}
+                  </div>
+                </div>
+              ) : null}
+              <p className="hint" style={{ marginTop: 18 }}>
+                {addressValid
+                  ? "Payable to your address. Checked before your client is asked to pay."
+                  : "Add your payout address to make this payable."}
+              </p>
+            </div>
+          </aside>
+        </div>
+
+        {history.length > 0 ? (
+          <>
+            <h2 className="title" style={{ fontSize: 19, marginTop: 44 }}>
+              Your invoices
+            </h2>
+            <p className="hint" style={{ marginBottom: 14 }}>
+              Kept in this browser only — we never store them.
+            </p>
+            <div className="card-grid">
+              {history.map((inv) => (
+                <button key={inv.id} type="button" className="card" onClick={() => onOpen(inv)}>
+                  <div className="row-between">
+                    <span className="payout">${inv.amount} USDC</span>
+                    <span className="meta">{inv.id}</span>
+                  </div>
+                  <p className="question-preview">{inv.description}</p>
+                  <div className="row-between">
+                    <span className="meta">{inv.to}</span>
+                    <span className="meta">{new Date(inv.issued).toLocaleDateString()}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : null}
+
+        <p className="note">
+          Invoices live entirely in their link. Nothing is stored on our servers — not the
+          amount, not your client's name.{" "}
+          <a
+            href={invoiceLink({
+              id: "INV-DEMO",
+              from: "Ada Okonkwo",
+              to: "Northwind Ltd",
+              description: "Website redesign — March",
+              amount: "250.00",
+              address: "GBRO5EM4JM57PDPS4A533V7JZNWFWB7S6IRT5UZNQYPPUN7XEEGJLEHW6I",
+              issued: new Date().toISOString(),
+            })}
+          >
+            See what your client sees →
+          </a>
+        </p>
+      </form>
+    </>
   );
 }

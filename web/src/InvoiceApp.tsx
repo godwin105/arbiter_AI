@@ -7,6 +7,7 @@
  */
 import { useEffect, useState } from "react";
 
+import { TopBar } from "./components/Chrome";
 import { type Invoice, decodeInvoice } from "./invoice";
 import { Books } from "./screens/Books";
 import { InvoiceCreate } from "./screens/InvoiceCreate";
@@ -43,21 +44,34 @@ export function InvoiceApp({ usdcAssetId, explorerBase }: Props) {
       : "Arbiter — invoice, get paid in USDC";
   }, [fromLink]);
 
-  if (!ready) return <div className="centre"><div className="spinner" /></div>;
+  if (!ready) {
+    return (
+      <div className="centre">
+        <div className="spinner" />
+      </div>
+    );
+  }
 
   if (location.hash.length > 1 && !fromLink) {
     return (
-      <div className="shell">
-        <h1 className="brand">Broken link</h1>
-        <p className="blurb">
-          This invoice link is incomplete or was damaged in transit — some apps cut long links
-          short. Ask whoever sent it for the full one.
-        </p>
-        <a className="button" href="/invoice/"
-           style={{ display: "block", textAlign: "center", textDecoration: "none" }}>
-          Create an invoice instead
-        </a>
-      </div>
+      <>
+        <TopBar name="Invoice" />
+        <div className="shell fade-in">
+          <div className="empty" style={{ marginTop: 40 }}>
+            <div className="empty-glyph" aria-hidden="true">
+              ⚠
+            </div>
+            <p className="empty-title">Broken link</p>
+            <p className="empty-body">
+              This invoice link is incomplete or was damaged in transit — some apps cut long
+              links short. Ask whoever sent it for the full one.
+            </p>
+          </div>
+          <a className="button" href="/invoice/" style={{ textDecoration: "none" }}>
+            Create an invoice instead
+          </a>
+        </div>
+      </>
     );
   }
 
