@@ -280,9 +280,19 @@ Requirements wired in and verified in the live 402 response:
 - [x] Bazaar discovery extension with per-route input/output schemas
 - [x] `x402-global-challenge` tag on every route
 - [x] Single consistent `payTo` across all routes
-- [ ] Deployed to public HTTPS on MainNet
-- [ ] One real MainNet payment settled, USDC confirmed received
-- [ ] Endpoint visible on the leaderboard with the challenge filter
+- [x] Deployed to public HTTPS on MainNet
+- [x] One real MainNet payment settled, USDC confirmed received
+- [x] Listed on the Algorand MainNet USDC leaderboard
+
+The first settled MainNet payment was
+[`IUTXAWFK…`](https://lora.algokit.io/mainnet/transaction/IUTXAWFKZUJNDPC222U6EKKDWP5DB5JWHWAATTCBK3R5O7M7XZBQ):
+0.002 USDC (ASA 31566704) in round 63,807,235, verified on the indexer rather
+than taken from the settlement response.
+
+Attribution is by `payTo` address. The leaderboard exposes no tag filter, so the
+`x402-global-challenge` tag aids Bazaar discovery but does not gate scoring —
+`npm run preflight -- <url>` now confirms the listing directly instead of
+inferring it from the tag.
 
 `assertChallengeReady()` fails startup if a mainnet deployment is still pointing
 at localhost or plain HTTP.
