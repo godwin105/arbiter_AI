@@ -19,6 +19,11 @@ import {
   isValidAlgorandAddress,
 } from "@x402/avm";
 
+import { loadEnvFile } from "./env-file.js";
+
+// Before anything reads process.env below.
+loadEnvFile();
+
 /**
  * Required by the challenge on every route's x402 configuration; this is what
  * attributes our endpoints to the competition leaderboard. Losing it means our

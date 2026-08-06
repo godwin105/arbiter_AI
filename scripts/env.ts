@@ -1,23 +1,14 @@
+import { loadEnvFile } from "../src/env-file.js";
+
 /**
  * Loads .env for standalone scripts.
  *
- * The server is normally started through a shell that has already sourced .env,
- * but a demo run by hand has no such shell. Without this, a script silently sees
- * no API key and reports it as "not configured" rather than "not loaded" — which
- * sends you looking in the wrong place.
- *
- * Uses Node's built-in loader, so no dependency.
+ * A demo run by hand has no shell that exported the variables, and without this
+ * a script silently sees no API key and reports it as "not configured" rather
+ * than "not loaded" — which sends you looking in the wrong place.
  */
-export function loadEnv(path = ".env"): void {
-  try {
-    process.loadEnvFile(path);
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code;
-    // A missing .env is fine — the caller may be passing everything explicitly.
-    if (code !== "ENOENT") {
-      console.error(`[env] could not read ${path}:`, err);
-    }
-  }
+export function loadEnv(path?: string): void {
+  loadEnvFile(path);
 }
 
 /**
