@@ -1,10 +1,23 @@
 import { Router } from "express";
 import { z } from "zod";
+import algosdk from "algosdk";
 
 import { judgeCounterparty } from "../engine/counterparty.js";
 
+/**
+ * Length alone is not validation. An Algorand address carries a checksum, so a
+ * 58-character string can pass a length check and still be undecodable — which
+ * sent the failure past this schema and into the engine, where the caller saw
+ * an opaque error instead of "that address is malformed".
+ */
+const algorandAddress = (label: string) =>
+  z
+    .string()
+    .length(58, `${label} must be a 58-character Algorand address`)
+    .refine(algosdk.isValidAddress, `${label} is not a valid Algorand address (bad checksum)`);
+
 const BodySchema = z.object({
-  address: z.string().length(58, "address must be a 58-character Algorand address"),
+  address: algorandAddress("address"),
   expectedAsset: z.string().regex(/^\d+$/, "expectedAsset must be a numeric ASA id").optional(),
   amount: z.string().optional(),
   claimedIdentity: z.string().min(1).max(256).optional(),

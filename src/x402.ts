@@ -19,6 +19,26 @@ const SERVICE_NAME = "Arbiter";
 const ICON_URL = `${config.publicUrl}/icon.png`;
 
 /**
+ * Worked examples for the Bazaar catalog, and they have to actually work.
+ *
+ * These were placeholders — a 58-character string that was not a real address,
+ * and the literal text "_base64_unsigned_txn". Both passed the request schema
+ * and then failed inside the engine, so an agent that discovered a route and
+ * copied its advertised example paid, got nothing back, and saw a service that
+ * looked broken. Sixteen of nineteen counterparty calls died that way.
+ *
+ * EXAMPLE_TXN is a genuine rekey transaction: it decodes, and it produces the
+ * BLOCK verdict shown as the advertised output, so the example is honest about
+ * what the route does.
+ */
+const EXAMPLE_ADDRESS = config.payTo;
+const EXAMPLE_TXN =
+  "iaNmZWXNA+iiZnbOA82CwKNnZW6sbWFpbm5ldC12MS4womdoxCDAYcTY/B293tLXYEvkVo4/bQQZh6w3veS2" +
+  "ILWrOSSK36Jsds4DzYaoo3JjdsQgMGLukZxLO/eN8uA7vdfpy2xbB/LyIz7TLYYe+jf3IQylcmVrZXnEIBTf" +
+  "MR4p4ZXQ2JLDvBYpifk9otL271yT7D2yIg6lWtVBo3NuZMQgMGLukZxLO/eN8uA7vdfpy2xbB/LyIz7TLYYe" +
+  "+jf3IQykdHlwZaNwYXk=";
+
+/**
  * Payment option shared by every route. Only the price differs per route, so
  * payTo/network/asset are defined exactly once — this is what keeps the
  * Composite Entry rollup intact.
@@ -72,8 +92,8 @@ export function buildRoutes(resolved: ResolvedFacilitator): RoutesConfig {
       bodyType: "json",
       input: {
         chain: "algorand",
-        transaction: "gqNhbXTNA+ijZm..._base64_unsigned_txn",
-        signer: "ARBITERXAMPLEADDRESSXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        transaction: EXAMPLE_TXN,
+        signer: EXAMPLE_ADDRESS,
       },
       inputSchema: {
         type: "object",
@@ -125,7 +145,7 @@ export function buildRoutes(resolved: ResolvedFacilitator): RoutesConfig {
     extensions: declareDiscoveryExtension({
       bodyType: "json",
       input: {
-        address: "ARBITERXAMPLEADDRESSXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        address: EXAMPLE_ADDRESS,
         expectedAsset: "31566704",
         amount: "250.00",
         claimedIdentity: "acme-exports.algo",

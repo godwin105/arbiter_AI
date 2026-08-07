@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import algosdk from "algosdk";
 
 import { judgeTransaction } from "../engine/transaction.js";
 import { judgeEvmTransaction } from "../engine/evm.js";
@@ -11,7 +12,12 @@ const AlgorandSchema = z.object({
     z.string().min(1, "transaction must be a non-empty base64 string"),
     z.array(z.string().min(1)).min(1).max(16, "an atomic group holds at most 16 transactions"),
   ]),
-  signer: z.string().length(58, "signer must be a 58-character Algorand address").optional(),
+  // Checksum-checked, not just length: see the note in counterparty.ts.
+  signer: z
+    .string()
+    .length(58, "signer must be a 58-character Algorand address")
+    .refine(algosdk.isValidAddress, "signer is not a valid Algorand address (bad checksum)")
+    .optional(),
 });
 
 const HexAddress = z.string().regex(/^0x[0-9a-fA-F]{40}$/, "must be a 0x-prefixed 20-byte address");
