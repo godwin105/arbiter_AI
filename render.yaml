@@ -30,8 +30,19 @@
 # ---------------------------------------------------------------------------
 
 services:
+  # Renaming this changes the public hostname, which is deliberate. The Bazaar
+  # catalog keys each resource on method + URL and freezes its advertised
+  # examples at first registration, so a route whose examples were wrong when it
+  # first settled a payment keeps advertising the wrong ones forever. A new
+  # hostname registers all three routes afresh.
+  #
+  # Rename the service in the Render dashboard to match this value rather than
+  # letting a Blueprint sync create a second service — renaming in place keeps
+  # PAY_TO and PUBLIC_URL, which are sync:false and would otherwise need
+  # re-entering. Update PUBLIC_URL to the new hostname in the same visit: it is
+  # what the 402 response advertises as the resource URL.
   - type: web
-    name: arbiter
+    name: arbiter-x402
     runtime: docker
     dockerfilePath: ./Dockerfile
     dockerContext: .

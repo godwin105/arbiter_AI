@@ -28,7 +28,8 @@
     "build:clients": "npm run build -w @arbiterlabs/sdk -w @arbiterlabs/mcp -w @arbiterlabs/langchain -w @arbiterlabs/eliza -w @arbiterlabs/proxy -w @arbiterlabs/keeperhub",
     "typecheck:all": "npm run typecheck && npm run typecheck -w @arbiterlabs/sdk -w @arbiterlabs/mcp -w @arbiterlabs/langchain -w @arbiterlabs/eliza -w @arbiterlabs/proxy -w @arbiterlabs/keeperhub",
     "publish:check": "bash scripts/publish-packages.sh --dry-run",
-    "publish:packages": "bash scripts/publish-packages.sh"
+    "publish:packages": "bash scripts/publish-packages.sh",
+    "register:routes": "tsx scripts/register-routes.ts"
   },
   "dependencies": {
     "@x402/avm": "^2.21.0",
